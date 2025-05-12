@@ -1,0 +1,91 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Resumo Gerencial - Gestão de Vendas{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>Vendas por Vendedor
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="plotly-graph">
+                    {{ grafico_vendas|safe }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-users me-2"></i>Atendimentos por Vendedor
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="plotly-graph">
+                    {{ grafico_atendimentos|safe }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-trophy me-2"></i>Ranking de Vendedores
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-user me-1"></i>Vendedor</th>
+                                <th><i class="fas fa-users me-1"></i>Total de Atendimentos</th>
+                                <th><i class="fas fa-check-circle me-1"></i>Total de Vendas</th>
+                                <th><i class="fas fa-chart-line me-1"></i>Média de Vendas por Atendimento</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for venda in vendas_por_vendedor %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'venda-list' %}?vendedor={{ venda.vendedor_id }}">
+                                        {{ venda.vendedor__username }}
+                                    </a>
+                                </td>
+                                <td>{{ venda.total_atendimentos }}</td>
+                                <td>{{ venda.total_vendas }}</td>
+                                <td>
+                                    {% if venda.total_atendimentos > 0 %}
+                                        {{ venda.total_vendas|divisibleby:venda.total_atendimentos|floatformat:2 }}
+                                    {% else %}
+                                        0
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center">
+                                    <i class="fas fa-info-circle me-1"></i>Nenhum dado disponível.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,109 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Vendas - Gestão de Vendas{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+            <i class="fas fa-list me-2"></i>Lista de Vendas
+        </h5>
+        <a href="{% url 'venda-create' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-1"></i>Nova Venda
+        </a>
+    </div>
+    <div class="card-body">
+        {% if vendedor_selecionado %}
+            <div class="alert alert-info">
+                Exibindo atendimentos de: <strong>{{ vendedor_nome }}</strong>
+                <a href="{% url 'venda-list' %}" class="btn btn-sm btn-secondary ms-2">Limpar filtro</a>
+            </div>
+        {% endif %}
+        {% if vendas %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th><i class="fas fa-calendar me-1"></i>Data</th>
+                            {% if show_vendedor %}
+                                <th><i class="fas fa-user me-1"></i>Vendedor</th>
+                            {% endif %}
+                            <th><i class="fas fa-handshake me-1"></i>Atendimentos</th>
+                            <th><i class="fas fa-comment me-1"></i>Observações</th>
+                            <th><i class="fas fa-cog me-1"></i>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for venda in vendas %}
+                            <tr>
+                                <td>{{ venda.data|date:"d/m/Y" }}</td>
+                                {% if show_vendedor %}
+                                    <td>{{ venda.vendedor.get_full_name|default:venda.vendedor.username }}</td>
+                                {% endif %}
+                                <td>{{ venda.atendimentos|default:"-" }}</td>
+                                <td>{{ venda.observacoes|default:"-" }}</td>
+                                <td>
+                                    <a href="{% url 'venda-update' venda.id %}" class="btn btn-sm btn-info">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'venda-delete' venda.id %}" class="btn btn-sm btn-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if is_paginated %}
+                <nav aria-label="Navegação de páginas" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1">
+                                    <i class="fas fa-angle-double-left"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
+                                    <i class="fas fa-angle-left"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}">
+                                    <i class="fas fa-angle-right"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">
+                                    <i class="fas fa-angle-double-right"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
+        {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>Nenhuma venda registrada.
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,162 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Dashboard - Gestão de Vendas{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6">
+        <div class="dashboard-card">
+            <div class="icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="value">{{ numero_atendimentos }}</div>
+            <div class="label">Número de Atendimentos</div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="dashboard-card">
+            <div class="icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="value">{{ numero_fechamentos }}</div>
+            <div class="label">Número de Fechamentos (Vendas)</div>
+        </div>
+    </div>
+</div>
+
+{% if is_gerente %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-trophy me-2"></i>Ranking de Vendedores
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Vendedor</th>
+                                <th>Atendimentos</th>
+                                <th>Total de Vendas</th>
+                                <th>Taxa de Conversão</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for v in ranking %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'venda-list' %}?vendedor={{ v.vendedor_id }}">
+                                        {{ v.vendedor__username }}
+                                    </a>
+                                </td>
+                                <td>{{ v.total_atendimentos }}</td>
+                                <td>{{ v.fechamentos }}</td>
+                                <td>
+                                    {% if v.total_atendimentos > 0 %}
+                                        {% widthratio v.fechamentos v.total_atendimentos 100 %}%
+                                    {% else %}
+                                        0%
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-cog me-2"></i>Ferramentas Gerenciais
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex gap-2">
+                    <a href="{% url 'importar-vendas' %}" class="btn btn-success">
+                        <i class="fas fa-file-import me-1"></i>Importar Vendas
+                    </a>
+                    <a href="{% url 'modelo-importacao' %}" class="btn btn-outline-primary ms-2" download>
+                        <i class="fas fa-download me-1"></i>Baixar Modelo de Importação
+                    </a>
+                    <a href="{% url 'resumo-gerencial' %}" class="btn btn-info">
+                        <i class="fas fa-chart-bar me-1"></i>Resumo Gerencial
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-list me-2"></i>Meus Atendimentos
+                </h5>
+                <a href="{% url 'venda-create' %}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus me-1"></i>Novo Atendimento
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Cliente</th>
+                                <th>Contato</th>
+                                <th>Origem</th>
+                                <th>Modelo de Interesse</th>
+                                <th>Forma de Pagamento</th>
+                                <th>Status</th>
+                                <th>Observações</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for venda in vendas %}
+                            <tr>
+                                <td>{{ venda.data_atendimento|date:"d/m/Y" }}</td>
+                                <td>{{ venda.nome_cliente }}</td>
+                                <td>{{ venda.contato }}</td>
+                                <td>{{ venda.origem }}</td>
+                                <td>{{ venda.modelo_interesse }}</td>
+                                <td>{{ venda.forma_pagamento }}</td>
+                                <td>
+                                    <span class="badge {% if venda.status == 'VENDIDO' %}bg-success{% elif venda.status == 'PENDENTE' %}bg-warning{% else %}bg-danger{% endif %}">
+                                        {{ venda.status }}
+                                    </span>
+                                </td>
+                                <td>{{ venda.observacoes|default:"-" }}</td>
+                                <td>
+                                    <a href="{% url 'venda-update' venda.pk %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="9" class="text-center">
+                                    <i class="fas fa-info-circle me-1"></i>Nenhum atendimento registrado.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
