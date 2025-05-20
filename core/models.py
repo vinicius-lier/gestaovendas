@@ -49,6 +49,7 @@ class Venda(models.Model):
     observacoes = models.TextField(blank=True, null=True)
     data_atendimento = models.DateField(blank=True, null=True)
     vendedor = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
+    is_consignacao = False  # Campo virtual, não armazenado no banco
 
     def __str__(self):
         return f"{self.nome_cliente} - {self.modelo_interesse} ({self.data_atendimento})"
@@ -112,3 +113,22 @@ class Consignacao(models.Model):
         if self.valor_venda:
             return self.valor_venda - self.valor_comissao
         return 0
+
+class AssinaturaDigital(models.Model):
+    venda = models.ForeignKey(Venda, on_delete=models.CASCADE, related_name='assinaturas', null=True, blank=True)
+    consignacao = models.ForeignKey(Consignacao, on_delete=models.CASCADE, null=True, blank=True, related_name='assinaturas')
+    data_criacao = models.DateTimeField(auto_now_add=True)
+    imagem_assinatura = models.TextField()  # Armazena a assinatura em formato base64
+    tipo = models.CharField(max_length=20, choices=[
+        ('cliente', 'Assinatura do Cliente'),
+        ('vendedor', 'Assinatura do Vendedor'),
+    ])
+    
+    class Meta:
+        verbose_name = 'Assinatura Digital'
+        verbose_name_plural = 'Assinaturas Digitais'
+        
+    def __str__(self):
+        if self.venda:
+            return f"Assinatura {self.tipo} - Venda {self.venda.id}"
+        return f"Assinatura {self.tipo} - Consignação {self.consignacao.id}"

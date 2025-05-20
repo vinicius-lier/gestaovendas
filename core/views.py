@@ -3,22 +3,21 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView, FormView
 from django.urls import reverse_lazy
-from django.db.models import Sum, Count, Q
+from django.db.models import Count, Q
 from django.contrib.auth.models import User
-from .models import Venda, Perfil, Consignacao
+from .models import Venda, Perfil, Consignacao, AssinaturaDigital
 from .forms import VendaForm, ConsignacaoForm, ConsignacaoVendaForm, PerfilForm, UsuarioCreateForm, UsuarioUpdateForm, AlterarSenhaForm
 import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
 from django.http import JsonResponse, FileResponse
 from django.contrib import messages
-from django.core.files.storage import default_storage
 from django.conf import settings
-import shutil
 import os
 from django.utils import timezone
 from datetime import timedelta
 from django.contrib.auth.models import Group
+from django.views.decorators.csrf import csrf_exempt
+import json
+import decimal
 
 def is_master(user):
     try:
@@ -37,20 +36,80 @@ def dashboard(request):
     if is_master(request.user) or is_gerente(request.user):
         vendedor_id = request.GET.get('vendedor')
         vendedores = User.objects.filter(groups__name='vendedores')
+        
+        # Vendas diretas
         vendas = Venda.objects.all()
         if vendedor_id:
             vendas = vendas.filter(vendedor_id=vendedor_id)
-        numero_atendimentos = vendas.count()
-        numero_fechamentos = vendas.filter(status='VENDIDO').count()
+            
+        # Consignações vendidas
+        consignacoes_vendidas = Consignacao.objects.filter(status='VENDIDO')
+        if vendedor_id:
+            consignacoes_vendidas = consignacoes_vendidas.filter(vendedor_responsavel_id=vendedor_id)
+            
+        # Totais
+        numero_atendimentos = vendas.count() + consignacoes_vendidas.count()
+        numero_fechamentos = vendas.filter(status='VENDIDO').count() + consignacoes_vendidas.count()
         
-        # Ranking de vendedores por fechamentos (conversões)
-        ranking = (
+        # Ranking de vendedores combinando vendas diretas e consignações vendidas
+        # Primeiro obtemos as estatísticas de vendas diretas
+        ranking_vendas = (
             Venda.objects.values('vendedor__username', 'vendedor_id')
             .annotate(
                 total_atendimentos=Count('id'),
                 fechamentos=Count('id', filter=Q(status='VENDIDO'))
             )
-            .order_by('-fechamentos', '-total_atendimentos')
+        )
+        
+        # Depois obtemos estatísticas de consignações vendidas
+        ranking_consignacoes = (
+            Consignacao.objects.filter(status='VENDIDO')
+            .values('vendedor_responsavel__username', 'vendedor_responsavel_id')
+            .annotate(
+                total_atendimentos=Count('id'),
+                fechamentos=Count('id')
+            )
+        )
+        
+        # Combinamos os dois rankings em um dicionário
+        ranking_combinado = {}
+        
+        # Adicionar dados de vendas diretas
+        for item in ranking_vendas:
+            vendedor_id = item['vendedor_id']
+            vendedor_nome = item['vendedor__username']
+            
+            if vendedor_id not in ranking_combinado:
+                ranking_combinado[vendedor_id] = {
+                    'vendedor_id': vendedor_id,
+                    'vendedor__username': vendedor_nome,
+                    'total_atendimentos': 0,
+                    'fechamentos': 0
+                }
+                
+            ranking_combinado[vendedor_id]['total_atendimentos'] += item['total_atendimentos']
+            ranking_combinado[vendedor_id]['fechamentos'] += item['fechamentos']
+        
+        # Adicionar dados de consignações vendidas
+        for item in ranking_consignacoes:
+            vendedor_id = item['vendedor_responsavel_id']
+            vendedor_nome = item['vendedor_responsavel__username']
+            
+            if vendedor_id not in ranking_combinado:
+                ranking_combinado[vendedor_id] = {
+                    'vendedor_id': vendedor_id,
+                    'vendedor__username': vendedor_nome,
+                    'total_atendimentos': 0,
+                    'fechamentos': 0
+                }
+                
+            ranking_combinado[vendedor_id]['total_atendimentos'] += item['total_atendimentos']
+            ranking_combinado[vendedor_id]['fechamentos'] += item['fechamentos']
+        
+        # Convertemos o dicionário para lista e ordenamos
+        ranking = sorted(
+            ranking_combinado.values(),
+            key=lambda x: (-x['fechamentos'], -x['total_atendimentos'])
         )
         
         context = {
@@ -64,8 +123,11 @@ def dashboard(request):
         }
     else:
         vendas = Venda.objects.filter(vendedor=request.user)
-        numero_atendimentos = vendas.count()
-        numero_fechamentos = vendas.filter(status='VENDIDO').count()
+        consignacoes_vendidas = Consignacao.objects.filter(vendedor_responsavel=request.user, status='VENDIDO')
+        
+        numero_atendimentos = vendas.count() + consignacoes_vendidas.count()
+        numero_fechamentos = vendas.filter(status='VENDIDO').count() + consignacoes_vendidas.count()
+        
         context = {
             'numero_atendimentos': numero_atendimentos,
             'numero_fechamentos': numero_fechamentos,
@@ -81,7 +143,11 @@ class VendaListView(LoginRequiredMixin, ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        queryset = Venda.objects.all().select_related('vendedor') if is_master(self.request.user) or is_gerente(self.request.user) else Venda.objects.filter(vendedor=self.request.user)
+        # Obtém vendas diretas
+        if is_master(self.request.user) or is_gerente(self.request.user):
+            queryset = Venda.objects.all().select_related('vendedor')
+        else:
+            queryset = Venda.objects.filter(vendedor=self.request.user)
         
         # Filtro por vendedor
         vendedor_id = self.request.GET.get('vendedor')
@@ -99,7 +165,44 @@ class VendaListView(LoginRequiredMixin, ListView):
         elif ordem == 'vendedor_desc':
             queryset = queryset.order_by('-vendedor__username')
         
-        return queryset
+        # Obter consignações vendidas e convertê-las para objetos tipo Venda
+        if is_master(self.request.user) or is_gerente(self.request.user):
+            consignacoes_vendidas = Consignacao.objects.filter(status='VENDIDO').select_related('vendedor_responsavel')
+            if vendedor_id:
+                consignacoes_vendidas = consignacoes_vendidas.filter(vendedor_responsavel_id=vendedor_id)
+        else:
+            consignacoes_vendidas = Consignacao.objects.filter(
+                status='VENDIDO', 
+                vendedor_responsavel=self.request.user
+            ).select_related('vendedor_responsavel')
+        
+        # Converter consignações em objetos tipo Venda para exibição unificada
+        vendas_lista = list(queryset)
+        for consignacao in consignacoes_vendidas:
+            venda_virtual = Venda(
+                nome_cliente=consignacao.nome_comprador or consignacao.nome_proprietario,
+                contato=consignacao.contato_proprietario,
+                modelo_interesse=f"{consignacao.marca} {consignacao.modelo}",
+                status='VENDIDO',
+                data_atendimento=consignacao.data_venda or consignacao.data_entrada,
+                vendedor=consignacao.vendedor_responsavel,
+                observacoes=f"Venda de consignação: {consignacao.marca} {consignacao.modelo} (#{consignacao.id})"
+            )
+            venda_virtual.id = f"C{consignacao.id}"  # Prefixo C para identificar consignações
+            venda_virtual.is_consignacao = True
+            vendas_lista.append(venda_virtual)
+        
+        # Ordenação manual da lista combinada
+        if ordem == 'data_asc':
+            vendas_lista.sort(key=lambda x: x.data_atendimento or timezone.now().date())
+        elif ordem == 'data_desc' or ordem == '-data_atendimento':
+            vendas_lista.sort(key=lambda x: x.data_atendimento or timezone.now().date(), reverse=True)
+        elif ordem == 'vendedor_asc':
+            vendas_lista.sort(key=lambda x: x.vendedor.username if x.vendedor else '')
+        elif ordem == 'vendedor_desc':
+            vendas_lista.sort(key=lambda x: x.vendedor.username if x.vendedor else '', reverse=True)
+        
+        return vendas_lista
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -157,34 +260,72 @@ def resumo_gerencial(request):
     if not is_gerente(request.user):
         return redirect('dashboard')
     
+    # Obter vendas diretas
     vendas = Venda.objects.all()
     
-    # Dados para gráficos
+    # Obter consignações vendidas
+    consignacoes = Consignacao.objects.filter(status='VENDIDO')
+    
+    # Calcular estatísticas para vendas diretas
     vendas_por_vendedor = vendas.values('vendedor__username', 'vendedor_id').annotate(
         total_vendas=Count('id', filter=Q(status='VENDIDO')),
         total_atendimentos=Count('id')
     )
     
-    # Gráfico de vendas por vendedor
-    fig_vendas = px.bar(
-        vendas_por_vendedor,
-        x='vendedor__username',
-        y='total_vendas',
-        title='Vendas por Vendedor'
+    # Calcular estatísticas para consignações vendidas
+    consignacoes_por_vendedor = consignacoes.values(
+        'vendedor_responsavel__username', 'vendedor_responsavel_id'
+    ).annotate(
+        total_vendas=Count('id'),
+        total_atendimentos=Count('id')
     )
     
-    # Gráfico de atendimentos por vendedor
-    fig_atendimentos = px.bar(
-        vendas_por_vendedor,
-        x='vendedor__username',
-        y='total_atendimentos',
-        title='Atendimentos por Vendedor'
+    # Combinar estatísticas
+    estatisticas_combinadas = {}
+    
+    # Adicionar dados de vendas diretas
+    for item in vendas_por_vendedor:
+        vendedor_id = item['vendedor_id']
+        vendedor_nome = item['vendedor__username']
+        
+        if vendedor_id not in estatisticas_combinadas:
+            estatisticas_combinadas[vendedor_id] = {
+                'vendedor__username': vendedor_nome,
+                'vendedor_id': vendedor_id,
+                'total_vendas': 0,
+                'total_atendimentos': 0
+            }
+            
+        estatisticas_combinadas[vendedor_id]['total_vendas'] += item['total_vendas']
+        estatisticas_combinadas[vendedor_id]['total_atendimentos'] += item['total_atendimentos']
+    
+    # Adicionar dados de consignações vendidas
+    for item in consignacoes_por_vendedor:
+        vendedor_id = item['vendedor_responsavel_id']
+        vendedor_nome = item['vendedor_responsavel__username']
+        
+        if vendedor_id not in estatisticas_combinadas:
+            estatisticas_combinadas[vendedor_id] = {
+                'vendedor__username': vendedor_nome,
+                'vendedor_id': vendedor_id,
+                'total_vendas': 0,
+                'total_atendimentos': 0
+            }
+            
+        estatisticas_combinadas[vendedor_id]['total_vendas'] += item['total_vendas']
+        estatisticas_combinadas[vendedor_id]['total_atendimentos'] += item['total_atendimentos']
+    
+    # Converter para lista para exibição na tabela
+    vendas_por_vendedor_combinado = list(estatisticas_combinadas.values())
+    
+    # Ordenar por total de vendas (decrescente)
+    vendas_por_vendedor_combinado = sorted(
+        vendas_por_vendedor_combinado,
+        key=lambda x: (-x['total_vendas'], -x['total_atendimentos'])
     )
     
     context = {
-        'vendas_por_vendedor': vendas_por_vendedor,
-        'grafico_vendas': fig_vendas.to_html(),
-        'grafico_atendimentos': fig_atendimentos.to_html(),
+        'vendas_por_vendedor': vendas_por_vendedor_combinado,
     }
     
     return render(request, 'core/resumo_gerencial.html', context)
@@ -267,6 +408,118 @@ def download_modelo_importacao(request):
     file_path = os.path.join(settings.BASE_DIR, 'core', 'static', 'core', 'modelo_importacao_vendas.xlsx')
     return FileResponse(open(file_path, 'rb'), as_attachment=True)
 
+def valor_por_extenso(valor):
+    """Converte um valor numérico para texto por extenso em português do Brasil."""
+    
+    # Trata o valor como decimal para evitar problemas de arredondamento
+    valor = decimal.Decimal(str(valor))
+    
+    # Separa reais e centavos
+    reais = int(valor)
+    centavos = int((valor - reais) * 100)
+    
+    # Listas com os nomes dos números
+    unidades = ['', 'um', 'dois', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove']
+    dezenas = ['', 'dez', 'vinte', 'trinta', 'quarenta', 'cinquenta', 'sessenta', 'setenta', 'oitenta', 'noventa']
+    de_11_a_19 = ['', 'onze', 'doze', 'treze', 'quatorze', 'quinze', 'dezesseis', 'dezessete', 'dezoito', 'dezenove']
+    centenas = ['', 'cento', 'duzentos', 'trezentos', 'quatrocentos', 'quinhentos', 'seiscentos', 'setecentos', 'oitocentos', 'novecentos']
+    milhares = ['', 'mil', 'milhão', 'bilhão', 'trilhão']
+    milhares_plural = ['', 'mil', 'milhões', 'bilhões', 'trilhões']
+    
+    # Função para converter número até 999
+    def converter_ate_999(numero):
+        if numero == 0:
+            return ''
+        elif numero == 100:
+            return 'cem'
+        elif numero < 10:
+            return unidades[numero]
+        elif numero < 20:
+            return de_11_a_19[numero - 10]
+        else:
+            dezena = dezenas[numero // 10]
+            unidade = unidades[numero % 10]
+            if unidade:
+                return f"{dezena} e {unidade}"
+            return dezena
+            
+    # Função para converter centenas
+    def converter_centena(numero):
+        if numero == 0:
+            return ''
+        elif numero == 100:
+            return 'cem'
+        else:
+            centena = centenas[numero // 100]
+            resto = numero % 100
+            
+            if resto == 0:
+                return centena
+            else:
+                resto_str = converter_ate_999(resto)
+                return f"{centena} e {resto_str}"
+    
+    # Se o valor for zero
+    if reais == 0 and centavos == 0:
+        return 'zero reais'
+    
+    # Parte dos reais
+    texto_reais = ''
+    
+    if reais > 0:
+        # Divide o valor em grupos de 3 dígitos
+        grupos = []
+        temp = reais
+        while temp > 0:
+            grupos.append(temp % 1000)
+            temp //= 1000
+            
+        # Converte cada grupo em texto
+        textos_grupos = []
+        for i, grupo in enumerate(grupos):
+            if grupo > 0:
+                texto_grupo = converter_centena(grupo)
+                
+                # Adiciona o sufixo (mil, milhão, etc.)
+                if i > 0:
+                    if grupo == 1:
+                        texto_grupo = f"{texto_grupo} {milhares[i]}"
+                    else:
+                        texto_grupo = f"{texto_grupo} {milhares_plural[i]}"
+                        
+                textos_grupos.append(texto_grupo)
+        
+        # Junta os textos dos grupos
+        textos_grupos.reverse()
+        
+        if len(textos_grupos) == 1:
+            texto_reais = textos_grupos[0]
+        else:
+            texto_reais = " e ".join(textos_grupos)
+            # Substituir a última ocorrência de " e " por " e "
+            ultima_ocorrencia = texto_reais.rfind(" e ")
+            if ultima_ocorrencia != -1 and ultima_ocorrencia != 0:
+                texto_reais = texto_reais[:ultima_ocorrencia] + " e " + texto_reais[ultima_ocorrencia + 3:]
+    
+    # Parte dos centavos
+    texto_centavos = ''
+    if centavos > 0:
+        texto_centavos = converter_ate_999(centavos)
+    
+    # Monta o texto final
+    if reais == 0:
+        return f"{texto_centavos} centavos"
+    elif reais == 1:
+        if centavos == 0:
+            return f"{texto_reais} real"
+        else:
+            return f"{texto_reais} real e {texto_centavos} centavos"
+    else:
+        if centavos == 0:
+            return f"{texto_reais} reais"
+        else:
+            return f"{texto_reais} reais e {texto_centavos} centavos"
+
 @login_required
 def gerar_contrato(request, venda_id, tipo_contrato):
     venda = get_object_or_404(Venda, id=venda_id)
@@ -278,6 +531,9 @@ def gerar_contrato(request, venda_id, tipo_contrato):
     
     # Data atual formatada
     data_atual = timezone.now().strftime('%d/%m/%Y')
+    
+    # Valor padrão para a venda (pode ser substituído por um valor real se disponível)
+    valor_venda = 50000.00
     
     # Dados base do contrato
     context = {
@@ -301,10 +557,11 @@ def gerar_contrato(request, venda_id, tipo_contrato):
             'placa': "AAA-0000",  # Campo não existe no modelo, usando valor padrão
             'renavam': "00000000000",  # Campo não existe no modelo, usando valor padrão
             'km': 0,  # Campo não existe no modelo, usando valor padrão
+            'motor': "",  # Campo para número do motor
         },
         'venda': {
-            'valor_total': 50000.00,  # Campo não existe no modelo, usando valor padrão
-            'valor_total_extenso': "cinquenta mil reais",  # Campo não existe no modelo, usando valor padrão
+            'valor_total': valor_venda,
+            'valor_total_extenso': valor_por_extenso(valor_venda),
             'forma_pagamento': venda.forma_pagamento or "À Vista",
             'forma_pagamento_detalhada': "Pagamento à vista via transferência bancária.",  # Campo não existe no modelo, usando valor padrão
             'prazo_entrega': 5,  # Campo não existe no modelo, usando valor padrão
@@ -629,10 +886,13 @@ def gerar_contrato_consignacao(request, pk):
             'placa': consignacao.placa,
             'chassi': consignacao.chassi or 'N/A',
             'renavam': consignacao.renavam or 'N/A',
+            'motor': "",  # Campo para número do motor
         },
         'contrato': {
             'valor_consignacao': consignacao.valor_consignacao,
+            'valor_consignacao_extenso': valor_por_extenso(consignacao.valor_consignacao),
             'valor_minimo': consignacao.valor_minimo,
+            'valor_minimo_extenso': valor_por_extenso(consignacao.valor_minimo or consignacao.valor_consignacao),
             'comissao_percentual': consignacao.comissao_percentual,
             'data_entrada': consignacao.data_entrada,
             'data_limite': consignacao.data_limite,
@@ -671,9 +931,10 @@ def gerar_contrato_consignacao(request, pk):
         }
         
         # Adicionar dados da venda
+        valor_venda = consignacao.valor_venda or 0
         context['venda'] = {
-            'valor_total': consignacao.valor_venda or 0,
-            'valor_total_extenso': "valor em extenso",  # Você pode implementar uma função para converter número em extenso
+            'valor_total': valor_venda,
+            'valor_total_extenso': valor_por_extenso(valor_venda),
             'forma_pagamento': "À Vista",  # Campo não disponível no modelo, usando valor padrão
             'data_venda': consignacao.data_venda.strftime('%d/%m/%Y') if consignacao.data_venda else data_atual,
         }
@@ -808,3 +1069,64 @@ class AlterarSenhaView(GerenciamentoUsuariosMixin, FormView):
         form.save()
         messages.success(self.request, "Senha alterada com sucesso!")
         return super().form_valid(form)
+
+@csrf_exempt
+def salvar_assinatura(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            assinatura_data = data.get('assinatura')
+            tipo = data.get('tipo', 'cliente')
+            id_venda = data.get('id_venda')
+            id_consignacao = data.get('id_consignacao')
+            
+            if not assinatura_data:
+                return JsonResponse({'status': 'erro', 'mensagem': 'Dados da assinatura não fornecidos'}, status=400)
+                
+            # Verificar se está associada a uma venda ou consignação
+            venda = None
+            consignacao = None
+            
+            if id_venda:
+                try:
+                    venda = Venda.objects.get(id=id_venda)
+                except Venda.DoesNotExist:
+                    return JsonResponse({'status': 'erro', 'mensagem': 'Venda não encontrada'}, status=404)
+            
+            if id_consignacao:
+                try:
+                    consignacao = Consignacao.objects.get(id=id_consignacao)
+                except Consignacao.DoesNotExist:
+                    return JsonResponse({'status': 'erro', 'mensagem': 'Contrato de consignação não encontrado'}, status=404)
+            
+            if not venda and not consignacao:
+                return JsonResponse({'status': 'erro', 'mensagem': 'É necessário fornecer um ID de venda ou consignação'}, status=400)
+            
+            # Criar a assinatura
+            assinatura = AssinaturaDigital(
+                venda=venda,
+                consignacao=consignacao,
+                imagem_assinatura=assinatura_data,
+                tipo=tipo
+            )
+            assinatura.save()
+            
+            return JsonResponse({'status': 'sucesso', 'mensagem': 'Assinatura salva com sucesso', 'id': assinatura.id})
+            
+        except Exception as e:
+            return JsonResponse({'status': 'erro', 'mensagem': str(e)}, status=500)
+    
+    return JsonResponse({'status': 'erro', 'mensagem': 'Método não permitido'}, status=405)
+
+class ContratoDetailView(LoginRequiredMixin, DetailView):
+    model = Venda
+    template_name = 'core/contrato_detalhes.html'
+    context_object_name = 'contrato'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        contrato = self.object
+        # Buscar assinaturas relacionadas
+        assinaturas = AssinaturaDigital.objects.filter(venda=contrato)
+        context['assinaturas'] = assinaturas
+        return context

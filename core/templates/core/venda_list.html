@@ -70,13 +70,19 @@
                     </thead>
                     <tbody>
                         {% for venda in vendas %}
-                            <tr>
+                            <tr {% if venda.is_consignacao %}class="table-success"{% endif %}>
                                 <td>{{ venda.data_atendimento|date:"d/m/Y" }}</td>
                                 {% if show_vendedor %}
                                     <td>{{ venda.vendedor.get_full_name|default:venda.vendedor.username }}</td>
                                 {% endif %}
                                 <td>{{ venda.nome_cliente|default:"-" }}</td>
-                                <td>{{ venda.modelo_interesse|default:"-" }}</td>
+                                <td>
+                                    {% if venda.is_consignacao %}
+                                        <i class="fas fa-motorcycle me-1"></i>{{ venda.modelo_interesse|default:"-" }}
+                                    {% else %}
+                                        {{ venda.modelo_interesse|default:"-" }}
+                                    {% endif %}
+                                </td>
                                 <td>
                                     {% if venda.status == 'VENDIDO' %}
                                         <span class="badge bg-success">VENDIDO</span>
@@ -92,28 +98,36 @@
                                 </td>
                                 <td>
                                     <div class="btn-group">
-                                        <a href="{% url 'venda-update' venda.id %}" class="btn btn-sm btn-info">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        <a href="{% url 'venda-delete' venda.id %}" class="btn btn-sm btn-danger">
-                                            <i class="fas fa-trash"></i>
-                                        </a>
-                                        
-                                        {% if venda.status == 'VENDIDO' %}
-                                        <div class="btn-group">
-                                            <button type="button" class="btn btn-sm btn-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                                                <i class="fas fa-file-contract"></i> Contratos
-                                            </button>
-                                            <ul class="dropdown-menu">
-                                                <li><a class="dropdown-item" href="{% url 'gerar-contrato' venda.id 'compra_venda' %}">Contrato de Venda</a></li>
-                                                <li><a class="dropdown-item" href="{% url 'gerar-contrato' venda.id 'veiculo_usado' %}">Contrato Veículo Usado</a></li>
-                                                <li><a class="dropdown-item" href="{% url 'gerar-contrato' venda.id 'sem_garantia' %}">Contrato Sem Garantia</a></li>
-                                                <li><a class="dropdown-item" href="{% url 'gerar-contrato' venda.id 'consignacao' %}">Contrato de Consignação</a></li>
-                                                <li><hr class="dropdown-divider"></li>
-                                                <li><a class="dropdown-item" href="{% url 'gerar-contrato' venda.id 'sem_emplacamento' %}">Liberação Sem Emplacamento</a></li>
-                                                <li><a class="dropdown-item" href="{% url 'gerar-contrato' venda.id 'sem_intencao' %}">Liberação Sem Intenção</a></li>
-                                            </ul>
-                                        </div>
+                                        {% if venda.is_consignacao %}
+                                            {% with consignacao_id=venda.id|stringformat:"s"|slice:"1:" %}
+                                            <a href="{% url 'consignacao-detail' consignacao_id %}" class="btn btn-sm btn-info">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            {% endwith %}
+                                        {% else %}
+                                            <a href="{% url 'venda-update' venda.id %}" class="btn btn-sm btn-info">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="{% url 'venda-delete' venda.id %}" class="btn btn-sm btn-danger">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                            
+                                            {% if venda.status == 'VENDIDO' %}
+                                            <div class="btn-group">
+                                                <button type="button" class="btn btn-sm btn-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                                    <i class="fas fa-file-contract"></i> Contratos
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                    <li><a class="dropdown-item" href="{% url 'gerar-contrato' venda.id 'compra_venda' %}">Contrato de Venda</a></li>
+                                                    <li><a class="dropdown-item" href="{% url 'gerar-contrato' venda.id 'veiculo_usado' %}">Contrato Veículo Usado</a></li>
+                                                    <li><a class="dropdown-item" href="{% url 'gerar-contrato' venda.id 'sem_garantia' %}">Contrato Sem Garantia</a></li>
+                                                    <li><a class="dropdown-item" href="{% url 'gerar-contrato' venda.id 'consignacao' %}">Contrato de Consignação</a></li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li><a class="dropdown-item" href="{% url 'gerar-contrato' venda.id 'sem_emplacamento' %}">Liberação Sem Emplacamento</a></li>
+                                                    <li><a class="dropdown-item" href="{% url 'gerar-contrato' venda.id 'sem_intencao' %}">Liberação Sem Intenção</a></li>
+                                                </ul>
+                                            </div>
+                                            {% endif %}
                                         {% endif %}
                                     </div>
                                 </td>
