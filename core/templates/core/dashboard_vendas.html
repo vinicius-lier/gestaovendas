@@ -1,0 +1,173 @@
+{% extends 'core/base.html' %}
+{% block title %}Dashboard de Vendas{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4 text-center">Dashboard de Vendas - {{ mes_atual }}/{{ ano_atual }}</h2>
+    
+    {% if not tem_vendas %}
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle me-2"></i>Não há vendas com status VENDIDO no período. Verifique se suas vendas têm o status correto e se as datas estão preenchidas.
+    </div>
+    {% endif %}
+    
+    <div class="row mb-4 text-center">
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Total de Vendas</h5>
+                    <h2 class="text-success">{{ total_vendas }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Taxa de Conversão</h5>
+                    <h2 class="text-primary">{{ taxa_conversao }}%</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Ticket Médio</h5>
+                    <h2 class="text-info">R$ {{ ticket_medio|floatformat:2 }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">Vendas por Vendedor</div>
+                <div class="card-body">
+                    <div id="grafico-vendedor"></div>
+                    {% if vendas_por_vendedor|length == 0 %}
+                    <div class="text-center text-muted pt-3">
+                        <i class="fas fa-info-circle me-1"></i>Sem dados para exibir
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">Vendas por Canal de Origem</div>
+                <div class="card-body">
+                    <div id="grafico-origem"></div>
+                    {% if vendas_por_origem|length == 0 %}
+                    <div class="text-center text-muted pt-3">
+                        <i class="fas fa-info-circle me-1"></i>Sem dados para exibir
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">Vendas por Forma de Pagamento</div>
+                <div class="card-body">
+                    <div id="grafico-pagamento"></div>
+                    {% if vendas_por_pagamento|length == 0 %}
+                    <div class="text-center text-muted pt-3">
+                        <i class="fas fa-info-circle me-1"></i>Sem dados para exibir
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">Evolução das Vendas no Mês</div>
+                <div class="card-body">
+                    <div id="grafico-evolucao"></div>
+                    {% if vendas_por_dia|length == 0 %}
+                    <div class="text-center text-muted pt-3">
+                        <i class="fas fa-info-circle me-1"></i>Sem dados para exibir
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">Vendas por Status</div>
+                <div class="card-body">
+                    <div id="grafico-status"></div>
+                    {% if vendas_por_status|length == 0 %}
+                    <div class="text-center text-muted pt-3">
+                        <i class="fas fa-info-circle me-1"></i>Sem dados para exibir
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script>
+// Dados do contexto Django para JS
+const vendasPorVendedor = {{ vendas_por_vendedor|safe }};
+const vendasPorOrigem = {{ vendas_por_origem|safe }};
+const vendasPorPagamento = {{ vendas_por_pagamento|safe }};
+const vendasPorStatus = {{ vendas_por_status|safe }};
+const vendasPorDia = {{ vendas_por_dia|safe }};
+
+// Evitar erros se não houver dados
+if (vendasPorVendedor && vendasPorVendedor.length > 0) {
+    // Gráfico Vendas por Vendedor
+    Plotly.newPlot('grafico-vendedor', [{
+        x: vendasPorVendedor.map(v => v.vendedor__username || 'Não informado'),
+        y: vendasPorVendedor.map(v => v.qtd),
+        type: 'bar',
+        marker: {color: '#007bff'}
+    }], {title: 'Vendas por Vendedor', xaxis: {title: 'Vendedor'}, yaxis: {title: 'Vendas'}});
+}
+
+if (vendasPorOrigem && vendasPorOrigem.length > 0) {
+    // Gráfico Vendas por Origem
+    Plotly.newPlot('grafico-origem', [{
+        labels: vendasPorOrigem.map(v => v.origem),
+        values: vendasPorOrigem.map(v => v.qtd),
+        type: 'pie'
+    }], {title: 'Vendas por Canal de Origem'});
+}
+
+if (vendasPorPagamento && vendasPorPagamento.length > 0) {
+    // Gráfico Vendas por Forma de Pagamento
+    Plotly.newPlot('grafico-pagamento', [{
+        labels: vendasPorPagamento.map(v => v.forma_pagamento),
+        values: vendasPorPagamento.map(v => v.qtd),
+        type: 'pie'
+    }], {title: 'Vendas por Forma de Pagamento'});
+}
+
+if (vendasPorStatus && vendasPorStatus.length > 0) {
+    // Gráfico Vendas por Status
+    Plotly.newPlot('grafico-status', [{
+        x: vendasPorStatus.map(v => v.status),
+        y: vendasPorStatus.map(v => v.qtd),
+        type: 'bar',
+        marker: {color: '#28a745'}
+    }], {title: 'Vendas por Status', xaxis: {title: 'Status'}, yaxis: {title: 'Vendas'}});
+}
+
+if (vendasPorDia && vendasPorDia.length > 0) {
+    // Gráfico Evolução das Vendas no Mês
+    Plotly.newPlot('grafico-evolucao', [{
+        x: vendasPorDia.map(v => v.data_atendimento),
+        y: vendasPorDia.map(v => v.qtd),
+        type: 'scatter',
+        mode: 'lines+markers',
+        marker: {color: '#17a2b8'}
+    }], {title: 'Evolução das Vendas no Mês', xaxis: {title: 'Data'}, yaxis: {title: 'Vendas'}});
+}
+</script>
+{% endblock %} 

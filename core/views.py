@@ -3,10 +3,10 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView, FormView
 from django.urls import reverse_lazy
-from django.db.models import Count, Q
+from django.db.models import Count, Q, Sum, F
 from django.contrib.auth.models import User
-from .models import Venda, Perfil, Consignacao, AssinaturaDigital
-from .forms import VendaForm, ConsignacaoForm, ConsignacaoVendaForm, PerfilForm, UsuarioCreateForm, UsuarioUpdateForm, AlterarSenhaForm
+from .models import Venda, Perfil, Consignacao, AssinaturaDigital, EstoqueMoto, Cliente
+from .forms import VendaForm, ConsignacaoForm, ConsignacaoVendaForm, PerfilForm, UsuarioCreateForm, UsuarioUpdateForm, AlterarSenhaForm, EstoqueMotoForm, ClienteForm
 import pandas as pd
 from django.http import JsonResponse, FileResponse
 from django.contrib import messages
@@ -135,6 +135,84 @@ def dashboard(request):
             'is_gerente': False,
         }
     return render(request, 'core/dashboard.html', context)
+
+@login_required
+def dashboard_vendas(request):
+    hoje = timezone.now().date()
+    
+    # Obter filtros de mês e ano dos parâmetros GET, ou usar todos se não informados
+    mes = request.GET.get('mes')
+    ano = request.GET.get('ano')
+    
+    # Se não tiver filtros, pegue todas as vendas, caso contrário filtre por mês/ano
+    if mes and ano:
+        mes_atual = int(mes)
+        ano_atual = int(ano)
+        vendas = Venda.objects.filter(data_atendimento__year=ano_atual, data_atendimento__month=mes_atual)
+    else:
+        mes_atual = hoje.month
+        ano_atual = hoje.year
+        vendas = Venda.objects.exclude(data_atendimento__isnull=True)  # Pega todas as vendas com data
+    
+    atendimentos = vendas.count()
+    vendas_fechadas = vendas.filter(status='VENDIDO')
+    total_vendas = vendas_fechadas.count()
+
+    # Como não há campo de valor, ticket médio será apenas o número de vendas
+    valor_total = total_vendas
+    ticket_medio = total_vendas
+
+    taxa_conversao = (total_vendas / atendimentos * 100) if atendimentos else 0
+
+    # Agrupamentos com tratamento para nulos
+    vendas_por_vendedor = vendas_fechadas.values('vendedor__username').annotate(
+        qtd=Count('id')
+    ).order_by('-qtd')
+    
+    # Tratar campos nulos para origem
+    vendas_por_origem = vendas_fechadas.values('origem').annotate(
+        qtd=Count('id')
+    )
+    # Substituir valores nulos por "Não informado"
+    vendas_por_origem = [
+        {'origem': v['origem'] if v['origem'] else 'Não informado', 'qtd': v['qtd']} 
+        for v in vendas_por_origem
+    ]
+    
+    # Tratar campos nulos para forma_pagamento
+    vendas_por_pagamento = vendas_fechadas.values('forma_pagamento').annotate(
+        qtd=Count('id')
+    )
+    # Substituir valores nulos por "Não informado"
+    vendas_por_pagamento = [
+        {'forma_pagamento': v['forma_pagamento'] if v['forma_pagamento'] else 'Não informado', 'qtd': v['qtd']} 
+        for v in vendas_por_pagamento
+    ]
+    
+    vendas_por_status = vendas.values('status').annotate(qtd=Count('id'))
+    # Substituir valores nulos por "Não informado"
+    vendas_por_status = [
+        {'status': v['status'] if v['status'] else 'Não informado', 'qtd': v['qtd']} 
+        for v in vendas_por_status
+    ]
+    
+    vendas_por_dia = vendas_fechadas.values('data_atendimento').annotate(qtd=Count('id')).order_by('data_atendimento')
+
+    context = {
+        'total_vendas': total_vendas,
+        'taxa_conversao': round(taxa_conversao, 2),
+        'ticket_medio': round(ticket_medio, 2),
+        'vendas_por_vendedor': list(vendas_por_vendedor),
+        'vendas_por_origem': vendas_por_origem,
+        'vendas_por_pagamento': vendas_por_pagamento,
+        'vendas_por_status': vendas_por_status,
+        'vendas_por_dia': list(vendas_por_dia),
+        'mes_atual': mes_atual,
+        'ano_atual': ano_atual,
+        'tem_vendas': total_vendas > 0,  # Flag para verificar se há vendas
+    }
+    
+    return render(request, 'core/dashboard_vendas.html', context)
 
 class VendaListView(LoginRequiredMixin, ListView):
     model = Venda
@@ -750,9 +828,32 @@ class ConsignacaoCreateView(LoginRequiredMixin, CreateView):
             form.fields['vendedor_responsavel'].initial = self.request.user
             form.fields['vendedor_responsavel'].widget.attrs['readonly'] = True
         return form
-    
+
     def form_valid(self, form):
-        messages.success(self.request, "Consignação cadastrada com sucesso!")
+        moto_estoque = form.cleaned_data.get('moto_estoque')
+        if not moto_estoque:
+            # Tenta encontrar o proprietário pelo nome (opcional)
+            proprietario = None
+            nome_proprietario = form.cleaned_data.get('nome_proprietario')
+            if nome_proprietario:
+                proprietario = Cliente.objects.filter(nome__iexact=nome_proprietario).first()
+            # Cria a moto no estoque
+            moto_estoque = EstoqueMoto.objects.create(
+                marca=form.cleaned_data.get('marca'),
+                modelo=form.cleaned_data.get('modelo'),
+                ano=form.cleaned_data.get('ano'),
+                cor=form.cleaned_data.get('cor'),
+                placa=form.cleaned_data.get('placa'),
+                renavam=form.cleaned_data.get('renavam'),
+                chassi=form.cleaned_data.get('chassi'),
+                categoria='CONSIGNACAO',
+                status='DISPONIVEL',
+                data_chegada=form.cleaned_data.get('data_entrada'),
+                observacao=form.cleaned_data.get('observacoes'),
+                proprietario=proprietario
+            )
+            messages.success(self.request, 'Moto cadastrada automaticamente no estoque!')
+        # (Opcional) Poderia salvar o vínculo da consignação com a moto criada, se o modelo tivesse esse campo
         return super().form_valid(form)
 
 class ConsignacaoUpdateView(LoginRequiredMixin, UpdateView):
@@ -1130,3 +1231,135 @@ class ContratoDetailView(LoginRequiredMixin, DetailView):
         assinaturas = AssinaturaDigital.objects.filter(venda=contrato)
         context['assinaturas'] = assinaturas
         return context
+
+def motos_do_cliente_ajax(request, cliente_id):
+    motos = EstoqueMoto.objects.filter(proprietario_id=cliente_id)
+    data = {
+        'motos': [
+            {'id': moto.id, 'label': f'{moto.marca} {moto.modelo} - {moto.placa}'}
+            for moto in motos
+        ]
+    }
+    return JsonResponse(data)
+
+class EstoqueMotoListView(ListView):
+    model = EstoqueMoto
+    template_name = 'core/estoque_moto_list.html'
+    context_object_name = 'motos'
+    paginate_by = 10
+
+    def get_queryset(self):
+        queryset = EstoqueMoto.objects.all()
+        # Filtros básicos (marca, modelo, placa, categoria, status)
+        marca = self.request.GET.get('marca')
+        modelo = self.request.GET.get('modelo')
+        placa = self.request.GET.get('placa')
+        categoria = self.request.GET.get('categoria')
+        status = self.request.GET.get('status')
+        if marca:
+            queryset = queryset.filter(marca__icontains=marca)
+        if modelo:
+            queryset = queryset.filter(modelo__icontains=modelo)
+        if placa:
+            queryset = queryset.filter(placa__icontains=placa)
+        if categoria:
+            queryset = queryset.filter(categoria=categoria)
+        if status:
+            queryset = queryset.filter(status=status)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Estatísticas para cards
+        context['total_disponiveis'] = EstoqueMoto.objects.filter(status='DISPONIVEL').count()
+        context['total_vendidas'] = EstoqueMoto.objects.filter(status='VENDIDO').count()
+        context['total_oficina'] = EstoqueMoto.objects.filter(status='OFICINA').count()
+        context['total_pendencia'] = EstoqueMoto.objects.filter(status='PENDENCIA').count()
+        # Filtros atuais
+        context['filtros'] = {
+            'marca': self.request.GET.get('marca', ''),
+            'modelo': self.request.GET.get('modelo', ''),
+            'placa': self.request.GET.get('placa', ''),
+            'categoria': self.request.GET.get('categoria', ''),
+            'status': self.request.GET.get('status', ''),
+        }
+        return context
+
+class EstoqueMotoCreateView(CreateView):
+    model = EstoqueMoto
+    form_class = EstoqueMotoForm
+    template_name = 'core/estoque_moto_form.html'
+    success_url = reverse_lazy('estoque-moto-list')
+
+class EstoqueMotoUpdateView(UpdateView):
+    model = EstoqueMoto
+    form_class = EstoqueMotoForm
+    template_name = 'core/estoque_moto_form.html'
+    success_url = reverse_lazy('estoque-moto-list')
+
+class EstoqueMotoDeleteView(DeleteView):
+    model = EstoqueMoto
+    template_name = 'core/estoque_moto_confirm_delete.html'
+    success_url = reverse_lazy('estoque-moto-list')
+
+class ClienteListView(LoginRequiredMixin, ListView):
+    model = Cliente
+    template_name = 'core/cliente_list.html'
+    context_object_name = 'clientes'
+    paginate_by = 10
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        search_query = self.request.GET.get('search', '')
+        if search_query:
+            queryset = queryset.filter(
+                models.Q(nome__icontains=search_query) |
+                models.Q(cpf__icontains=search_query) |
+                models.Q(telefone__icontains=search_query)
+            )
+        return queryset.order_by('nome')
+
+class ClienteCreateView(LoginRequiredMixin, CreateView):
+    model = Cliente
+    form_class = ClienteForm
+    template_name = 'core/cliente_form.html'
+    success_url = reverse_lazy('cliente-list')
+    
+    def form_valid(self, form):
+        messages.success(self.request, 'Cliente cadastrado com sucesso!')
+        return super().form_valid(form)
+
+class ClienteUpdateView(LoginRequiredMixin, UpdateView):
+    model = Cliente
+    form_class = ClienteForm
+    template_name = 'core/cliente_form.html'
+    success_url = reverse_lazy('cliente-list')
+    
+    def form_valid(self, form):
+        messages.success(self.request, 'Cliente atualizado com sucesso!')
+        return super().form_valid(form)
+
+class ClienteDeleteView(LoginRequiredMixin, DeleteView):
+    model = Cliente
+    template_name = 'core/cliente_confirm_delete.html'
+    success_url = reverse_lazy('cliente-list')
+    
+    def delete(self, request, *args, **kwargs):
+        messages.success(self.request, 'Cliente excluído com sucesso!')
+        return super().delete(request, *args, **kwargs)
+
+def dados_moto_estoque_ajax(request, moto_id):
+    try:
+        moto = EstoqueMoto.objects.get(id=moto_id, categoria='CONSIGNACAO')
+        data = {
+            'marca': moto.marca,
+            'modelo': moto.modelo,
+            'ano': moto.ano,
+            'cor': moto.cor,
+            'placa': moto.placa,
+            'renavam': moto.renavam,
+            'chassi': moto.chassi,
+        }
+        return JsonResponse({'success': True, 'moto': data})
+    except EstoqueMoto.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Moto não encontrada ou não é da categoria Consignação.'})
