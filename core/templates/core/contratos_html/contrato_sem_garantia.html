@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contrato de Compra e Venda de Veículo Sem Garantia</title>
+    <link rel="stylesheet" href="{% static 'core/contratos_html/css/style.css' %}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/signature_pad/1.5.3/signature_pad.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header-gradient"></div>
+        
+        <div class="logo-container">
+            <img src="{% static 'core/contratos_html/images/logo.png' %}" alt="Logo da Empresa" class="logo">
+        </div>
+        
+        <div class="titulo-principal">CONTRATO DE COMPRA E VENDA</div>
+        <div class="subtitulo-principal">DE VEÍCULO SEM GARANTIA</div>
+        
+        <div class="secao">
+            <div class="parte">
+                <div class="parte-titulo">VENDEDOR:</div>
+                <p>{{ vendedor_texto_completo|default:"Paraty auto zero Ltda., pessoa jurídica de direito privado, inscrita sob CNPJ 02.968.496/0001-17, com sede na Rua Bruno Andrea N° 24 – Parque das palmeiras- Angra dos reis – RJ – CEP: 23.906-410, neste ato representada por Alessandro Correa Barbosa, brasileiro, empresário, portador da carteira de identidade RG: 21.818.188-1, inscrito no CPF: 118.921.797-09." }}</p>
+            </div>
+            
+            <div class="parte">
+                <div class="parte-titulo">COMPRADOR:</div>
+                <p>ANDREZA PEREIRA DE AMORIM, Telefone (24)992230090, portador da carteira de identidade, RG:10.733.493-0, CPF:068850.997-59, residente no endereço: COND. VALE DA BANQUETA, Nº 2150, Bairro: BANQUETA, cidade: ANGRA DOS REIS, UF: RJ, CEP:23933-600.</p>
+            </div>
+        </div>
+        
+        <div class="secao">
+            <p>As partes acima qualificadas de livre e espontânea vontade firmam o presente contrato de compra e venda de veículo usado sob as seguintes cláusulas:</p>
+        </div>
+        
+        <div class="secao">
+            <div class="secao-titulo">1 – DO OBJETO DO CONTRATO</div>
+            <p>Cláusula 1ª: Este contrato tem como objeto o veículo MARCA: SHINERAY, MODELO:XY125-6A, CHASSI:99HJT4125MS000088, COR: VERMELHA, PLACA: RKM-4B65, KM: 5.740, NÚMERO DE MOTOR: WY153FMI20121805 de Responsabilidade do VENDEDOR, livre de qualquer ônus e encargo.</p>
+        </div>
+        
+        <div class="secao">
+            <div class="secao-titulo">2 – DO PREÇO</div>
+            <p>Cláusula 1ª – Fica acordado o valor de R$ 4.500,00 (Quatro mil e quinhentos reais) como valor do bem.</p>
+            <p>Cláusula 2ª: Fica o COMPRADOR obrigado a efetuar o pagamento da quantia de 10% DO VALOR DA VENDA DA MOTOCICLETA ao VENDEDOR, sob pena de desistência de negócio.</p>
+        </div>
+        
+        <div class="secao">
+            <div class="secao-titulo">3 – DAS RESPONSABILIDADES DE GARANTIA</div>
+            <p>Cláusula 3ª – Fica o COMPRADOR ciente que se trata de um veículo em valor de repasse e sem garantia, porém em condições de uso.</p>
+            <p>Cláusula 4ª: O VENDEDOR não é responsável por eventuais danos causados pelo COMPRADOR oriundos de negligência, imprudência ou imperícia no uso do veículo.</p>
+        </div>
+        
+        <div class="secao">
+            <div class="secao-titulo">4 – DOCUMENTAÇÃO DO VEÍCULO</div>
+            <p>Cláusula 5ª: O comprador está ciente que o veículo está sendo entregue em nome do proprietário anterior devido ser uma motocicleta vendida sobre consignação.</p>
+            <p>Cláusula 6ª: O comprador está ciente que deve fazer a transferência de propriedade no prazo máximo de 30 dias conforme regulamento pelo código de trânsito Brasileiro (CTB), estabelecido na lei nº 9.503, de setembro de 1997.</p>
+            <p>Cláusula 7ª: O comprador está ciente que para concluir a transferência o mesmo terá que pagar o Duda de transferência nº 014-0 no valor de R$200,91, Duda de inclusão de gravame nº 018-3 no valor de R$223,24 (Caso o veículo seja financiado).</p>
+            <p>Cláusula 8ª: A Concessionaria Paraty Auto Zero Ltda não se responsabilizará se a motocicleta for aprendida por falta de vistoria, habilitação e transferência conforme exigências do DETRAN.</p>
+        </div>
+        
+        <div class="secao">
+            <div class="secao-titulo">5 – DO FORO</div>
+            <p>Cláusula 9ª: As partes elegem o foro da comarca de ANGRA DOS REIS – RJ para dirimir quaisquer controvérsias oriundas deste Contrato.</p>
+            <p>Cláusula 10ª: O Presente instrumento começa a vigorar a partir da assinatura de ambos os interessados. O Comprador leva o Documento do veículo, manual e chave reserva.</p>
+        </div>
+        
+        <div class="secao">
+            <div class="secao-titulo">7 – DO USO DA IMAGEM</div>
+            <p>Cláusula 11ª: O COMPRADOR autoriza, de livre e espontânea vontade, a utilizar e veicular sua imagem. Declarando estar ciente de que as imagens poderão ser divulgadas, sem prazo estipulado, em publicações impressas e ou eletrônicas, páginas de redes sociais, exposições públicas e outros locais indicados pelo VENDEDOR.</p>
+        </div>
+        
+        <div class="secao">
+            <p>Por estarem assim justos e contratados, firmam o presente instrumento em 02 (duas) vias de igual teor e forma.</p>
+        </div>
+        
+        <div class="secao">
+            <div class="secao-titulo">DECALQUE DE CHASSI</div>
+            <div class="assinatura-digital" style="height: 100px;"></div>
+            
+            <div class="secao-titulo">DECALQUE DE NÚMERO DE MOTOR</div>
+            <div class="assinatura-digital" style="height: 100px;"></div>
+        </div>
+        
+        <div class="assinaturas">
+            <div class="assinatura">
+                ANDREZA PEREIRA DE AMORIM<br>
+                CPF: 068.850.997-59
+            </div>
+            
+            <div class="assinatura">
+                PARATY AUTO ZERO LTDA<br>
+                CNPJ: 02.968.496/0001-17
+            </div>
+        </div>
+        
+        <div class="secao">
+            <p>Angra dos reis, {{ data_atual }} (Data atual)</p>
+            <p>CNPJ 02.968.496/0001-17 INSC. EST. 75.412.762</p>
+            <p>RUA BRUNO ANDREA 24 – PARQUE DAS PALMEIRAS – ANGRA DOS REIS – RJ.</p>
+        </div>
+        
+        <div class="assinatura-digital">
+            <div>Assinatura Digital</div>
+            <canvas id="signature-pad" width="400" height="200"></canvas>
+            <div>
+                <button id="clear">Limpar</button>
+                <button id="save">Salvar Assinatura</button>
+            </div>
+        </div>
+        
+        <div class="footer-gradient"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var canvas = document.getElementById('signature-pad');
+            var signaturePad = new SignaturePad(canvas, {
+                backgroundColor: 'rgba(255, 255, 255, 0)',
+                penColor: 'rgb(0, 0, 0)'
+            });
+            
+            document.getElementById('clear').addEventListener('click', function() {
+                signaturePad.clear();
+            });
+            
+            document.getElementById('save').addEventListener('click', function() {
+                if (signaturePad.isEmpty()) {
+                    alert('Por favor, forneça uma assinatura primeiro.');
+                } else {
+                    var dataURL = signaturePad.toDataURL();
+                    console.log(dataURL);
+                    alert('Assinatura salva com sucesso!');
+                    // Aqui você pode implementar o código para salvar a assinatura
+                }
+            });
+            
+            // Ajustar o tamanho do canvas quando a janela for redimensionada
+            window.addEventListener('resize', resizeCanvas);
+            
+            function resizeCanvas() {
+                var ratio = Math.max(window.devicePixelRatio || 1, 1);
+                canvas.width = canvas.offsetWidth * ratio;
+                canvas.height = canvas.offsetHeight * ratio;
+                canvas.getContext("2d").scale(ratio, ratio);
+                signaturePad.clear(); // Limpa a assinatura
+            }
+            
+            resizeCanvas();
+        });
+    </script>
+</body>
+</html>

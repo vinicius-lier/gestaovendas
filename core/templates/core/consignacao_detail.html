@@ -1,0 +1,192 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Detalhes da Consignação{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+            <i class="fas fa-motorcycle me-2"></i>Detalhes da Consignação
+        </h5>
+        <div>
+            <a href="{% url 'consignacao-update' consignacao.id %}" class="btn btn-sm btn-info">
+                <i class="fas fa-edit me-1"></i>Editar
+            </a>
+            {% if consignacao.status == 'DISPONÍVEL' %}
+            <a href="{% url 'consignacao-vender' consignacao.id %}" class="btn btn-sm btn-success">
+                <i class="fas fa-check-circle me-1"></i>Registrar Venda
+            </a>
+            {% endif %}
+            <a href="{% url 'gerar-contrato-consignacao' consignacao.id %}" class="btn btn-sm btn-primary">
+                <i class="fas fa-file-contract me-1"></i>Contrato
+            </a>
+            <a href="{% url 'consignacao-list' %}" class="btn btn-sm btn-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Voltar
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-8">
+                <!-- Dados do veículo -->
+                <div class="card mb-4">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0"><i class="fas fa-motorcycle me-2"></i>Informações do Veículo</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <h6 class="text-muted">Veículo</h6>
+                                <p class="mb-0 fs-5"><strong>{{ consignacao.marca }} {{ consignacao.modelo }}</strong></p>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <h6 class="text-muted">Ano</h6>
+                                <p class="mb-0 fs-5"><strong>{{ consignacao.ano }}</strong></p>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <h6 class="text-muted">Cor</h6>
+                                <p class="mb-0 fs-5"><strong>{{ consignacao.cor }}</strong></p>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <h6 class="text-muted">Placa</h6>
+                                <p class="mb-0 fs-5"><strong>{{ consignacao.placa }}</strong></p>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <h6 class="text-muted">Chassi</h6>
+                                <p class="mb-0 fs-5"><strong>{{ consignacao.chassi|default:"--" }}</strong></p>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <h6 class="text-muted">RENAVAM</h6>
+                                <p class="mb-0 fs-5"><strong>{{ consignacao.renavam|default:"--" }}</strong></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Dados do proprietário -->
+                <div class="card mb-4">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0"><i class="fas fa-user me-2"></i>Proprietário</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <h6 class="text-muted">Nome</h6>
+                                <p class="mb-0 fs-5"><strong>{{ consignacao.nome_proprietario }}</strong></p>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <h6 class="text-muted">Contato</h6>
+                                <p class="mb-0 fs-5"><strong>{{ consignacao.contato_proprietario }}</strong></p>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <h6 class="text-muted">CPF</h6>
+                                <p class="mb-0 fs-5"><strong>{{ consignacao.cpf_proprietario|default:"--" }}</strong></p>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <h6 class="text-muted">RG</h6>
+                                <p class="mb-0 fs-5"><strong>{{ consignacao.rg_proprietario|default:"--" }}</strong></p>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <h6 class="text-muted">Endereço</h6>
+                                <p class="mb-0 fs-5"><strong>{{ consignacao.endereco_proprietario|default:"--" }}</strong></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Observações -->
+                {% if consignacao.observacoes %}
+                <div class="card mb-4">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0"><i class="fas fa-comment me-2"></i>Observações</h5>
+                    </div>
+                    <div class="card-body">
+                        <p>{{ consignacao.observacoes|linebreaks }}</p>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Informações da consignação -->
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0"><i class="fas fa-handshake me-2"></i>Dados da Consignação</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <h6 class="text-muted">Status</h6>
+                            {% if consignacao.status == 'DISPONÍVEL' %}
+                                <p class="mb-0"><span class="badge bg-primary fs-6">{{ consignacao.status }}</span></p>
+                            {% elif consignacao.status == 'VENDIDO' %}
+                                <p class="mb-0"><span class="badge bg-success fs-6">{{ consignacao.status }}</span></p>
+                            {% elif consignacao.status == 'DEVOLVIDO' %}
+                                <p class="mb-0"><span class="badge bg-warning fs-6">{{ consignacao.status }}</span></p>
+                            {% elif consignacao.status == 'CANCELADO' %}
+                                <p class="mb-0"><span class="badge bg-secondary fs-6">{{ consignacao.status }}</span></p>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <h6 class="text-muted">Data de Entrada</h6>
+                            <p class="mb-0 fs-5"><strong>{{ consignacao.data_entrada|date:"d/m/Y" }}</strong></p>
+                        </div>
+                        <div class="mb-3">
+                            <h6 class="text-muted">Data Limite</h6>
+                            <p class="mb-0 fs-5"><strong>{{ consignacao.data_limite|date:"d/m/Y" }}</strong></p>
+                        </div>
+                        <div class="mb-3">
+                            <h6 class="text-muted">Vendedor Responsável</h6>
+                            <p class="mb-0 fs-5"><strong>{{ consignacao.vendedor_responsavel.get_full_name|default:consignacao.vendedor_responsavel.username }}</strong></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Informações financeiras -->
+                <div class="card mb-4">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0"><i class="fas fa-dollar-sign me-2"></i>Informações Financeiras</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <h6 class="text-muted">Valor de Consignação</h6>
+                            <p class="mb-0 fs-5"><strong>R$ {{ consignacao.valor_consignacao|floatformat:2 }}</strong></p>
+                        </div>
+                        <div class="mb-3">
+                            <h6 class="text-muted">Valor Mínimo</h6>
+                            <p class="mb-0 fs-5"><strong>R$ {{ consignacao.valor_minimo|default:"--" }}</strong></p>
+                        </div>
+                        <div class="mb-3">
+                            <h6 class="text-muted">Comissão</h6>
+                            <p class="mb-0 fs-5"><strong>{{ consignacao.comissao_percentual }}%</strong></p>
+                        </div>
+                        
+                        {% if consignacao.status == 'VENDIDO' %}
+                        <hr>
+                        <div class="mb-3">
+                            <h6 class="text-muted">Data da Venda</h6>
+                            <p class="mb-0 fs-5"><strong>{{ consignacao.data_venda|date:"d/m/Y" }}</strong></p>
+                        </div>
+                        <div class="mb-3">
+                            <h6 class="text-muted">Comprador</h6>
+                            <p class="mb-0 fs-5"><strong>{{ consignacao.nome_comprador }}</strong></p>
+                        </div>
+                        <div class="mb-3">
+                            <h6 class="text-muted">Valor da Venda</h6>
+                            <p class="mb-0 fs-5"><strong>R$ {{ consignacao.valor_venda|floatformat:2 }}</strong></p>
+                        </div>
+                        <div class="mb-3">
+                            <h6 class="text-muted">Valor da Comissão</h6>
+                            <p class="mb-0 fs-5"><strong>R$ {{ consignacao.valor_comissao|floatformat:2 }}</strong></p>
+                        </div>
+                        <div class="mb-3">
+                            <h6 class="text-muted">Valor para o Proprietário</h6>
+                            <p class="mb-0 fs-5"><strong>R$ {{ consignacao.valor_proprietario|floatformat:2 }}</strong></p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

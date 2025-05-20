@@ -1,0 +1,76 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Detalhes da Venda - Gestão de Vendas{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+            <i class="fas fa-info-circle me-2"></i>Detalhes da Venda
+        </h5>
+        <div>
+            {% if venda.status == 'VENDIDO' %}
+            <a href="{% url 'gerar-contrato' venda.id 'compra_venda' %}" class="btn btn-success" target="_blank">
+                <i class="fas fa-file-contract me-1"></i>Gerar Contrato
+            </a>
+            {% endif %}
+            <a href="{% url 'venda-update' venda.id %}" class="btn btn-primary">
+                <i class="fas fa-edit me-1"></i>Editar
+            </a>
+            <a href="{% url 'venda-list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Voltar
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <h6>Informações do Cliente</h6>
+                <table class="table">
+                    <tr>
+                        <th>Nome:</th>
+                        <td>{{ venda.nome_cliente }}</td>
+                    </tr>
+                    <tr>
+                        <th>Contato:</th>
+                        <td>{{ venda.contato }}</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <h6>Detalhes da Venda</h6>
+                <table class="table">
+                    <tr>
+                        <th>Data do Atendimento:</th>
+                        <td>{{ venda.data_atendimento|date:"d/m/Y" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Modelo de Interesse:</th>
+                        <td>{{ venda.modelo_interesse }}</td>
+                    </tr>
+                    <tr>
+                        <th>Forma de Pagamento:</th>
+                        <td>{{ venda.forma_pagamento }}</td>
+                    </tr>
+                    <tr>
+                        <th>Status:</th>
+                        <td>
+                            <span class="badge {% if venda.status == 'VENDIDO' %}bg-success{% elif venda.status == 'EM NEGOCIAÇÃO' %}bg-warning{% else %}bg-danger{% endif %}">
+                                {{ venda.status }}
+                            </span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        {% if venda.observacoes %}
+        <div class="row mt-3">
+            <div class="col-12">
+                <h6>Observações</h6>
+                <p>{{ venda.observacoes }}</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

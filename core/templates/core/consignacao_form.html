@@ -1,0 +1,113 @@
+{% extends 'core/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+    {% if form.instance.pk %}Editar Consignação{% else %}Nova Consignação{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-motorcycle me-2"></i>
+            {% if form.instance.pk %}Editar Consignação{% else %}Nova Consignação{% endif %}
+        </h5>
+    </div>
+    <div class="card-body">
+        <form method="post" class="needs-validation" novalidate>
+            {% csrf_token %}
+            
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <h4 class="border-bottom pb-2 mb-3">Dados do Proprietário</h4>
+                </div>
+                <div class="col-md-6">
+                    {{ form.nome_proprietario|as_crispy_field }}
+                </div>
+                <div class="col-md-6">
+                    {{ form.contato_proprietario|as_crispy_field }}
+                </div>
+                <div class="col-md-4">
+                    {{ form.cpf_proprietario|as_crispy_field }}
+                </div>
+                <div class="col-md-4">
+                    {{ form.rg_proprietario|as_crispy_field }}
+                </div>
+                <div class="col-md-4">
+                    {{ form.endereco_proprietario|as_crispy_field }}
+                </div>
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <h4 class="border-bottom pb-2 mb-3">Dados do Veículo</h4>
+                </div>
+                <div class="col-md-4">
+                    {{ form.marca|as_crispy_field }}
+                </div>
+                <div class="col-md-4">
+                    {{ form.modelo|as_crispy_field }}
+                </div>
+                <div class="col-md-4">
+                    {{ form.ano|as_crispy_field }}
+                </div>
+                <div class="col-md-3">
+                    {{ form.cor|as_crispy_field }}
+                </div>
+                <div class="col-md-3">
+                    {{ form.placa|as_crispy_field }}
+                </div>
+                <div class="col-md-3">
+                    {{ form.renavam|as_crispy_field }}
+                </div>
+                <div class="col-md-3">
+                    {{ form.chassi|as_crispy_field }}
+                </div>
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <h4 class="border-bottom pb-2 mb-3">Dados da Consignação</h4>
+                </div>
+                <div class="col-md-3">
+                    {{ form.data_entrada|as_crispy_field }}
+                </div>
+                <div class="col-md-3">
+                    {{ form.data_limite|as_crispy_field }}
+                </div>
+                <div class="col-md-3">
+                    {{ form.valor_consignacao|as_crispy_field }}
+                </div>
+                <div class="col-md-3">
+                    {{ form.valor_minimo|as_crispy_field }}
+                </div>
+                <div class="col-md-3">
+                    {{ form.comissao_percentual|as_crispy_field }}
+                </div>
+                <div class="col-md-3">
+                    {{ form.status|as_crispy_field }}
+                </div>
+                <div class="col-md-6">
+                    {{ form.vendedor_responsavel|as_crispy_field }}
+                </div>
+                <div class="col-md-12">
+                    {{ form.observacoes|as_crispy_field }}
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <a href="{% url 'consignacao-list' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Voltar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>Salvar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contrato de Intermediação para Venda de Veículo Automotor em Consignação</title>
+    <link rel="stylesheet" href="{% static 'core/contratos_html/css/style.css' %}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/signature_pad/1.5.3/signature_pad.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header-gradient"></div>
+        
+        <div class="logo-container">
+            <img src="{% static 'core/contratos_html/images/logo.png' %}?v={% now 'U' %}" alt="Logo da Empresa" class="logo">
+        </div>
+        
+        <div class="titulo-principal">CONTRATO DE INTERMEDIAÇÃO</div>
+        <div class="subtitulo-principal">PARA VENDA DE VEÍCULO AUTOMOTOR EM CONSIGNAÇÃO</div>
+        
+        <div class="secao">
+            <p>Nos expressos termos deste documento e na melhor forma de direito as partes abaixo qualificadas têm entre si certo e ajustado este contrato de intermediação para a venda de veículo Automotor em consignação como se segue:</p>
+        </div>
+        
+        <div class="secao">
+            <div class="secao-titulo">I – PARTES</div>
+            <div class="parte">
+                <div class="parte-titulo">CONSIGNANTE:</div>
+                <p>{{ proprietario.nome }} CPF: {{ proprietario.cpf }}</p>
+                <p>RESIDENTE NO ENDEREÇO: {{ proprietario.endereco }}</p>
+                <p>TELEFONE: {{ proprietario.contato }}</p>
+            </div>
+            
+            <div class="parte">
+                <div class="parte-titulo">CONSIGNADA:</div>
+                <p>{{ loja_texto_completo|default:"Paraty auto zero Ltda., pessoa jurídica de direito privado, inscrita sob CNPJ 02.968.496/0001-17, com sede na Rua Bruno Andrea N° 24 – Parque das palmeiras- Angra dos reis – RJ – CEP: 23.906-410, neste ato representada por Alessandro Correa Barbosa, brasileiro, empresário, portador da carteira de identidade RG: 21.818.188-1, inscrito no CPF: 118.921.797-09." }}</p>
+            </div>
+        </div>
+        
+        <div class="secao">
+            <div class="secao-titulo">II – OBJETO:</div>
+            <p>Através deste instrumento e nestas condições o CONSIGNANTE coloca à disposição da consignada um veículo automotor conforme especificações abaixo para que este intermedeie a venda para terceiros.</p>
+            
+            <div class="veiculo">
+                <div class="veiculo-titulo">VEÍCULO</div>
+                <p>MARCA/MODELO: {{ veiculo.marca }} {{ veiculo.modelo }} ANO FABRICAÇÃO/MODELO: {{ veiculo.ano }}</p>
+                <p>COR: {{ veiculo.cor }} PLACA: {{ veiculo.placa }}</p>
+                <p>CHASSI: {{ veiculo.chassi }} RENAVAM Nº {{ veiculo.renavam }}</p>
+                <p>DOCUMENTO EM NOME DE: {{ proprietario.nome }}</p>
+                <p>CONSIGNADO em perfeito estado.</p>
+            </div>
+        </div>
+        
+        <div class="secao">
+            <div class="secao-titulo">III – PREÇO:</div>
+            <p>O preço acordado para o consignante é de R$ {{ contrato.valor_consignacao|floatformat:2 }}.</p>
+            <p>O valor mínimo para a venda é de R$ {{ contrato.valor_minimo|floatformat:2 }}.</p>
+            <p>A comissão acordada é de {{ contrato.comissao_percentual }}% sobre o valor da venda.</p>
+        </div>
+        
+        <div class="secao">
+            <div class="secao-titulo">IV – PRAZO:</div>
+            <p>O prazo de vigência deste contrato, que poderá ser renovado através de acordo expresso entre as partes é de {{ contrato.prazo_dias }} ({{ contrato.prazo_dias|stringformat:"i" }}) dias.</p>
+            <p>Data de entrada: {{ contrato.data_entrada|date:"d/m/Y" }}</p>
+            <p>Data limite: {{ contrato.data_limite|date:"d/m/Y" }}</p>
+        </div>
+        
+        <div class="secao">
+            <div class="secao-titulo">V – RESPONSABILIDADES</div>
+            <p>§ 1ª: O CONSIGNANTE está ciente das qualidades e condições do veículo supramencionado, sendo que qualquer problema que ocorrer após a negociação efetuada, será de responsabilidade do mesmo.</p>
+            <p>§ 2ª: O CONSIGNANTE está ciente que caso o veículo não esteja devidamente documento, licenciado ou devidamente apto para realiza a vistoria de transferência para o novo comprador, será descontado todos os débitos pendentes ou peças necessárias para a transferência do veículo, valor será descontado do preço acordado no parágrafo III – PREÇO.</p>
+        </div>
+        
+        <div class="secao">
+            <div class="secao-titulo">VI – MULTA:</div>
+            <p>Caso o CONSIGNANTE faça a venda do veículo fora da loja durante o prazo de consignação acordado, terá que arca com uma multa equivalente a 10% DO VALOR mencionado na clausula III – PREÇO.</p>
+            <p>O CONSIGNANTE se responsabiliza perante a CONSIGNADA, assim como junto ao terceiro comprador, a fornece toda e qualquer documentação solicitada relativa ao veículo, assumindo até a data de hoje total responsabilidade civil e criminal, multas, taxas, saldos de indenizações e/ou prejuízos que sofrer em razão dos efeitos da evicção incidente sobre o veículo.</p>
+        </div>
+        
+        <div class="secao">
+            <p>E por estarem assim, certos e ajustados as partes assinam a presente em duas vias de igual teor.</p>
+            <p>{{ loja.cidade }} – {{ loja.estado }}, {{ data_atual }} (Data atual)</p>
+        </div>
+        
+        <div class="assinaturas">
+            <div class="assinatura">
+                CONSIGNANTE<br>
+                {{ proprietario.nome }}
+            </div>
+            
+            <div class="assinatura">
+                CONSIGNADA<br>
+                {{ loja.nome }}
+            </div>
+        </div>
+        
+        <div class="assinatura-digital">
+            <div>Assinatura Digital</div>
+            <canvas id="signature-pad" width="400" height="200"></canvas>
+            <div>
+                <button id="clear">Limpar</button>
+                <button id="save">Salvar Assinatura</button>
+            </div>
+        </div>
+        
+        <div class="footer-gradient"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var canvas = document.getElementById('signature-pad');
+            var signaturePad = new SignaturePad(canvas, {
+                backgroundColor: 'rgba(255, 255, 255, 0)',
+                penColor: 'rgb(0, 0, 0)'
+            });
+            
+            document.getElementById('clear').addEventListener('click', function() {
+                signaturePad.clear();
+            });
+            
+            document.getElementById('save').addEventListener('click', function() {
+                if (signaturePad.isEmpty()) {
+                    alert('Por favor, forneça uma assinatura primeiro.');
+                } else {
+                    var dataURL = signaturePad.toDataURL();
+                    console.log(dataURL);
+                    alert('Assinatura salva com sucesso!');
+                    // Aqui você pode implementar o código para salvar a assinatura
+                }
+            });
+            
+            // Ajustar o tamanho do canvas quando a janela for redimensionada
+            window.addEventListener('resize', resizeCanvas);
+            
+            function resizeCanvas() {
+                var ratio = Math.max(window.devicePixelRatio || 1, 1);
+                canvas.width = canvas.offsetWidth * ratio;
+                canvas.height = canvas.offsetHeight * ratio;
+                canvas.getContext("2d").scale(ratio, ratio);
+                signaturePad.clear(); // Limpa a assinatura
+            }
+            
+            resizeCanvas();
+        });
+    </script>
+</body>
+</html>

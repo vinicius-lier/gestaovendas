@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contrato de Compra e Venda de Veículo Usado</title>
+    <link rel="stylesheet" href="{% static 'core/contratos_html/css/style.css' %}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/signature_pad/1.5.3/signature_pad.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header-gradient"></div>
+        
+        <div class="logo-container">
+            <img src="{% static 'core/contratos_html/images/logo.png' %}" alt="Logo da Empresa" class="logo">
+        </div>
+        
+        <div class="titulo-principal">CONTRATO DE COMPRA E VENDA</div>
+        <div class="subtitulo-principal">DE VEÍCULO SEMI NOVO</div>
+        
+        <div class="secao">
+            <div class="parte">
+                <div class="parte-titulo">VENDEDOR:</div>
+                <p>{{ vendedor_texto_completo|default:"Paraty auto zero Ltda., pessoa jurídica de direito privado, inscrita sob CNPJ 02.968.496/0001-17, com sede na Rua Bruno Andrea N° 24 – Parque das palmeiras- Angra dos reis – RJ – CEP: 23.906-410, neste ato representada por Alessandro Correa Barbosa, brasileiro, empresário, portador da carteira de identidade RG: 21.818.188-1, inscrito no CPF: 118.921.797-09." }}</p>
+            </div>
+            
+            <div class="parte">
+                <div class="parte-titulo">COMPRADOR:</div>
+                <p>EDILENE PEREIRA Telefone (24)999051594, portador da carteira de identidade, CPF:101.123.187-54, RG: 20.169.276-1 residente no endereço: BECO SÃO LUCAS Nº 0, Bairro: BRACUI, cidade: ANGRA DOS REIS, UF: RJ, CEP: 23.943-135.</p>
+            </div>
+        </div>
+        
+        <div class="secao">
+            <p>As partes acima qualificadas de livre e espontânea vontade firmam o presente contrato de compra e venda de veículo usado sob as seguintes cláusulas:</p>
+        </div>
+        
+        <div class="secao">
+            <div class="secao-titulo">1 – DO OBJETO DO CONTRATO</div>
+            <p>Cláusula 1ª: Este contrato tem como objeto o veículo MARCA:YAMAHA, MODELO: NEO 125, CHASSI: 9C6SEB520R0069469, COR: PRETA PLACA: SRQ-2B02, KM: 2.897 NÚMERO DE MOTOR: E3V2E-094252 de Responsabilidade do VENDEDOR, livre de qualquer ônus e encargo.</p>
+        </div>
+        
+        <div class="secao">
+            <div class="secao-titulo">2 – DO PREÇO</div>
+            <p>Cláusula 1ª – Fica acordado o valor de R$14.500,00 (Quatorze mil e quinhentos reais) como valor do bem.</p>
+            <p>Cláusula 2ª: Fica o COMPRADOR obrigado a efetuar o pagamento da quantia de 10% DO VALOR DA VENDA DA MOTOCICLETA ao VENDEDOR, sob pena de desistência de negócio.</p>
+        </div>
+        
+        <div class="secao">
+            <div class="secao-titulo">3 – DAS RESPONSABILIDADES DE GARANTIA</div>
+            <p>Cláusula 3ª: Fica o VENDEDOR responsável pela entrega do veículo livre de qualquer defeito que prejudique seu bom funcionamento.</p>
+            <p>O VEICULO TEM GARANTIA DE 90 (noventa) DIAS OU 3.000 KM RODADOS, contatos a partir da data e quilometragem especificadas nesse contrato.</p>
+            <p>Cláusula 4ª: Fica o COMPRADOR ciente que peças de desgaste natural como: Pneu, lâmpadas, pastilha, painel e etc. não são cobertos pela garantia ainda que ocorra dentro do prazo estipulado nesse contrato.</p>
+            <p>Parágrafo único: Entende-se por defeito que prejudique o bom funcionamento do veículo as peças do motor e do câmbio.</p>
+            <p>Cláusula 5ª: Em caso de constatação de defeito dentro do prazo estabelecido na cláusula 3ª, fica o COMPRADOR obrigado a, imediatamente comunicar o VENDEDOR sobre o ocorrido que indicará a oficina credenciada (OFICINA PRADO MOTORS) para qual p veículo deverá ser encaminhado para ser periciado e, ato contínuo, reparado.</p>
+            <p>Parágrafo único: O VENDEDOR terá prazo de 30 (trinta) dias, a contar da ciência, para reparar o defeito, conforme estabelecido no art.18 Parágrafo 1º do Código de Defesa do Consumidor.</p>
+            <p>Cláusula 6ª: Caberá ao COMPRADOR, após o VENDEDOR indicar a oficina credenciada (PRADO MOTORS), adotar as providências necessárias para levar o veículo até a oficina credenciada (PRADO MOTORS), as expensas.</p>
+        </div>
+        
+        <div class="footer-gradient"></div>
+        
+        <div class="header-gradient"></div>
+        
+        <div class="logo-container">
+            <img src="{% static 'core/contratos_html/images/logo.png' %}" alt="Logo da Empresa" class="logo">
+        </div>
+        
+        <div class="titulo-principal">CONTRATO DE COMPRA E VENDA</div>
+        <div class="subtitulo-principal">DE VEÍCULO SEMI NOVO</div>
+        
+        <div class="secao">
+            <div class="secao-titulo">4 – CANCELAMENTO DA GARANTIA</div>
+            <p>Cláusula 7ª: O COMPRADOR não fará jus a garantia constante na cláusula 4ª, caso o mesmo realize a conversão do motor do veículo para outro combustível, alteração de características ou constate-se uso indevido do veículo.</p>
+            <p>Cláusula 8ª: Também leva a perda da garantia caso o COMPRADOR leve o veículo em qualquer outra oficina para qualquer tipo de reparo, o veículo perde imediatamente todo e qualquer tipo de garantia estabelecido pelo vendedor, conforme clausula 5ª.</p>
+            <p>Parágrafo único: O VENDEDOR não ressarcirá o COMPRADOR pelos gastos realizados com reparos no veículo fora da oficina credenciada.</p>
+        </div>
+        
+        <div class="secao">
+            <div class="secao-titulo">5 – DOCUMENTAÇÃO DO VEÍCULO</div>
+            <p>Cláusula 9ª: O comprador está ciente que o veículo está sendo entregue em nome do proprietário anterior devido ser uma motocicleta vendida sobre consignação.</p>
+            <p>Cláusula 10ª: O comprador está ciente que deve fazer a transferência de propriedade no prazo máximo de 30 dias conforme regulamento pelo código de trânsito Brasileiro (CTB), estabelecido na lei nº 9.503, de setembro de 1997.</p>
+            <p>Cláusula 11ª: O comprador está ciente que para concluir a transferência o mesmo terá que pagar IPVA 2025, GRT 2025, Duda de transferência nº 014-0 no valor de R$200,91, Duda de inclusão de gravame nº 018-3 no valor de R$223,24 (Caso o veículo seja financiado).</p>
+            <p>Cláusula 12ª: A Concessionaria Paraty Auto Zero Ltda não se responsabilizará se a motocicleta for aprendida por falta de vistoria, habilitação e transferência conforme exigências do DETRAN.</p>
+        </div>
+        
+        <div class="secao">
+            <div class="secao-titulo">6 - DAS DISPOSIÇÕES GERAIS</div>
+            <p>Cláusula 13ª: A garantia constante na cláusula 5ª não abrange serviços de reboque, aluguel de veículos reserva ou transporte em geral, bem como não contempla o reparo de componentes eletrônicos, sistemas de freio, embreagem, filtros, correias, pneus, sistema de direção e arrefecimentos, amortecedores, demais componentes de suspensão, escapamentos e componentes que estejam em contato direito com o combustível.</p>
+            <p>Cláusula 14ª: O VENDEDOR não é responsável por eventuais danos causados pelo COMPRADOR oriundos de negligência, imprudência ou imperícia no uso do veículo.</p>
+            <p>Cláusula 15ª: O Presente instrumento começa a vigorar a partir da assinatura de ambos os interessados.</p>
+            <p>Cláusula 16ª: O veículo está sendo entregue com: Manual, chave reserva e chave principal.</p>
+        </div>
+        
+        <div class="secao">
+            <div class="secao-titulo">7 – DO FORO</div>
+            <p>Cláusula 17ª: As partes elegem o foro da comarca de ANGRA DOS REIS – RJ para dirimir quaisquer controvérsias oriundas deste Contrato.</p>
+        </div>
+        
+        <div class="secao">
+            <div class="secao-titulo">8 – DO USO DA IMAGEM</div>
+            <p>Cláusula 18ª: O COMPRADOR autoriza, de livre e espontânea vontade, a utilizar e veicular sua imagem. Declarando estar ciente de que as imagens poderão ser divulgadas, sem prazo estipulado, em publicações impressas e ou eletrônicas, páginas de redes sociais, exposições públicas e outros locais indicados pelo VENDEDOR.</p>
+        </div>
+        
+        <div class="secao">
+            <p>Por estarem assim justos e contratados, firmam o presente instrumento em 02 (duas) vias de igual teor e forma.</p>
+            <p>Angra dos reis, 07 DE MAIO DE 2025.</p>
+        </div>
+        
+        <div class="secao">
+            <div class="secao-titulo">DECALQUE DE CHASSI</div>
+            <div class="assinatura-digital" style="height: 100px;"></div>
+            
+            <div class="secao-titulo">DECALQUE DE MOTOR</div>
+            <div class="assinatura-digital" style="height: 100px;"></div>
+        </div>
+        
+        <div class="assinaturas">
+            <div class="assinatura">
+                EDILENE PEREIRA<br>
+                CPF: 101.123.187-54
+            </div>
+            
+            <div class="assinatura">
+                PARATY AUTO ZERO LTDA<br>
+                CNPJ: 02.968.496/0001-17
+            </div>
+        </div>
+        
+        <div class="assinatura-digital">
+            <div>Assinatura Digital</div>
+            <canvas id="signature-pad" width="400" height="200"></canvas>
+            <div>
+                <button id="clear">Limpar</button>
+                <button id="save">Salvar Assinatura</button>
+            </div>
+        </div>
+        
+        <div class="footer-gradient"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var canvas = document.getElementById('signature-pad');
+            var signaturePad = new SignaturePad(canvas, {
+                backgroundColor: 'rgba(255, 255, 255, 0)',
+                penColor: 'rgb(0, 0, 0)'
+            });
+            
+            document.getElementById('clear').addEventListener('click', function() {
+                signaturePad.clear();
+            });
+            
+            document.getElementById('save').addEventListener('click', function() {
+                if (signaturePad.isEmpty()) {
+                    alert('Por favor, forneça uma assinatura primeiro.');
+                } else {
+                    var dataURL = signaturePad.toDataURL();
+                    console.log(dataURL);
+                    alert('Assinatura salva com sucesso!');
+                    // Aqui você pode implementar o código para salvar a assinatura
+                }
+            });
+            
+            // Ajustar o tamanho do canvas quando a janela for redimensionada
+            window.addEventListener('resize', resizeCanvas);
+            
+            function resizeCanvas() {
+                var ratio = Math.max(window.devicePixelRatio || 1, 1);
+                canvas.width = canvas.offsetWidth * ratio;
+                canvas.height = canvas.offsetHeight * ratio;
+                canvas.getContext("2d").scale(ratio, ratio);
+                signaturePad.clear(); // Limpa a assinatura
+            }
+            
+            resizeCanvas();
+        });
+    </script>
+</body>
+</html>

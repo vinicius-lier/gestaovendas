@@ -1,0 +1,49 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Visualizar Contrato - {{ tipo_contrato|title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-3">
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h4>Contrato - {{ tipo_contrato|title }}</h4>
+            <div>
+                <a href="{{ contrato_url }}" target="_blank" class="btn btn-primary">
+                    <i class="fas fa-external-link-alt me-1"></i> Abrir em Nova Aba
+                </a>
+                <button class="btn btn-success ms-2" onclick="window.print()">
+                    <i class="fas fa-print me-1"></i> Imprimir
+                </button>
+                <a href="javascript:history.back()" class="btn btn-secondary ms-2">
+                    <i class="fas fa-arrow-left me-1"></i> Voltar
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="alert alert-info text-center mb-4">
+        <strong>Dica:</strong> Para melhor visualização, clique em "Abrir em Nova Aba". Para imprimir, use o botão "Imprimir".
+    </div>
+    
+    <div class="text-center my-5">
+        <a href="{{ contrato_url }}" target="_blank" class="btn btn-lg btn-primary">
+            <i class="fas fa-external-link-alt me-2"></i> Abrir Contrato em Nova Aba
+        </a>
+    </div>
+    
+    <div class="card mt-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">Instruções</h5>
+        </div>
+        <div class="card-body">
+            <ol class="mb-0">
+                <li>Clique em <b>Abrir em Nova Aba</b> para visualizar o contrato completo</li>
+                <li>Revise o contrato e confirme se todas as informações estão corretas</li>
+                <li>Para imprimir, clique no botão <b>Imprimir</b> na nova aba ou use o menu de impressão do seu navegador</li>
+                <li>Após a assinatura, guarde uma cópia do contrato para referência futura</li>
+            </ol>
+        </div>
+    </div>
+</div>
+{% endblock %} 

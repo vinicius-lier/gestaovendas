@@ -1,0 +1,379 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Consignações - Gestão de Vendas{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+            <i class="fas fa-motorcycle me-2"></i>Consignações
+        </h5>
+        <a href="{% url 'consignacao-create' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-1"></i>Nova Consignação
+        </a>
+    </div>
+    <div class="card-body">
+        <!-- Estatísticas -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card bg-primary text-white">
+                    <div class="card-body text-center">
+                        <h5><i class="fas fa-motorcycle me-2"></i>Disponíveis</h5>
+                        <h2>{{ total_disponiveis }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body text-center">
+                        <h5><i class="fas fa-check-circle me-2"></i>Vendidos</h5>
+                        <h2>{{ total_vendidos }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-white">
+                    <div class="card-body text-center">
+                        <h5><i class="fas fa-clock me-2"></i>A Vencer</h5>
+                        <h2>{{ proximas_vencer }}</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Filtros -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="btn-group" role="group">
+                    <a href="{% url 'consignacao-list' %}{% if vendedor_selecionado %}?vendedor={{ vendedor_selecionado }}{% endif %}" 
+                       class="btn btn-outline-secondary {% if not status_atual %}active{% endif %}">
+                        Todos
+                    </a>
+                    <a href="?status=DISPONÍVEL{% if vendedor_selecionado %}&vendedor={{ vendedor_selecionado }}{% endif %}" 
+                       class="btn btn-outline-secondary {% if status_atual == 'DISPONÍVEL' %}active{% endif %}">
+                        Disponíveis
+                    </a>
+                    <a href="?status=VENDIDO{% if vendedor_selecionado %}&vendedor={{ vendedor_selecionado }}{% endif %}" 
+                       class="btn btn-outline-secondary {% if status_atual == 'VENDIDO' %}active{% endif %}">
+                        Vendidos
+                    </a>
+                </div>
+            </div>
+            {% if show_vendedor %}
+            <div class="col-md-6">
+                <form method="get" class="d-flex">
+                    <select name="vendedor" class="form-select me-2" onchange="this.form.submit()">
+                        <option value="">Todos os Vendedores</option>
+                        {% for vendedor in vendedores %}
+                            <option value="{{ vendedor.id }}" {% if vendedor_selecionado == vendedor.id|stringformat:"i" %}selected{% endif %}>
+                                {{ vendedor.get_full_name|default:vendedor.username }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    {% if status_atual %}
+                        <input type="hidden" name="status" value="{{ status_atual }}">
+                    {% endif %}
+                </form>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if vendedor_selecionado %}
+            <div class="alert alert-info">
+                Exibindo consignações de: <strong>{{ vendedor_nome }}</strong>
+                <a href="{% url 'consignacao-list' %}{% if status_atual %}?status={{ status_atual }}{% endif %}" class="btn btn-sm btn-secondary ms-2">Limpar filtro</a>
+            </div>
+        {% endif %}
+
+        {% if consignacoes %}
+            <div class="mb-3">
+                <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#filtrosAvancados" aria-expanded="false" aria-controls="filtrosAvancados">
+                    <i class="fas fa-filter me-1"></i> Filtros Avançados
+                </button>
+            </div>
+            
+            <!-- Filtros avançados (estilo Excel) -->
+            <div class="collapse mb-4" id="filtrosAvancados">
+                <div class="card card-body">
+                    <form method="get" id="filtroForm" class="row g-3">
+                        <!-- Preservar outros filtros ativos -->
+                        {% if status_atual %}
+                            <input type="hidden" name="status" value="{{ status_atual }}">
+                        {% endif %}
+                        {% if vendedor_selecionado %}
+                            <input type="hidden" name="vendedor" value="{{ vendedor_selecionado }}">
+                        {% endif %}
+                        {% if ordem_atual %}
+                            <input type="hidden" name="ordem" value="{{ ordem_atual }}">
+                        {% endif %}
+
+                        <!-- Filtros por coluna -->
+                        <div class="col-md-4">
+                            <label for="veiculo" class="form-label">Veículo (Marca/Modelo)</label>
+                            <input type="text" class="form-control" id="veiculo" name="veiculo" value="{{ filtros.veiculo }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="proprietario" class="form-label">Proprietário</label>
+                            <input type="text" class="form-control" id="proprietario" name="proprietario" value="{{ filtros.proprietario }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="placa" class="form-label">Placa</label>
+                            <input type="text" class="form-control" id="placa" name="placa" value="{{ filtros.placa }}">
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">Valor de Consignação</label>
+                            <div class="row">
+                                <div class="col">
+                                    <div class="input-group">
+                                        <span class="input-group-text">R$</span>
+                                        <input type="number" class="form-control" name="valor_min" placeholder="Mínimo" value="{{ filtros.valor_min }}">
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="input-group">
+                                        <span class="input-group-text">R$</span>
+                                        <input type="number" class="form-control" name="valor_max" placeholder="Máximo" value="{{ filtros.valor_max }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">Período de Entrada</label>
+                            <div class="row">
+                                <div class="col">
+                                    <input type="date" class="form-control" name="data_inicio" placeholder="De" value="{{ filtros.data_inicio }}">
+                                </div>
+                                <div class="col">
+                                    <input type="date" class="form-control" name="data_fim" placeholder="Até" value="{{ filtros.data_fim }}">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search me-1"></i> Filtrar
+                            </button>
+                            <a href="{% url 'consignacao-list' %}" class="btn btn-secondary">
+                                <i class="fas fa-times me-1"></i> Limpar Filtros
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>
+                                <div class="d-flex align-items-center">
+                                    <span><i class="fas fa-calendar me-1"></i>Data Entrada</span>
+                                    <div class="dropdown ms-2">
+                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                            <i class="fas fa-sort"></i>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li>
+                                                <a class="dropdown-item" href="?ordem=data_asc{% include 'core/snippets/preserve_filters.html' with exclude_param='ordem' %}">
+                                                    <i class="fas fa-sort-amount-up-alt me-1"></i>Mais Antigas Primeiro
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="?ordem=data_desc{% include 'core/snippets/preserve_filters.html' with exclude_param='ordem' %}">
+                                                    <i class="fas fa-sort-amount-down me-1"></i>Mais Recentes Primeiro
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </th>
+                            <th>
+                                <div class="d-flex align-items-center">
+                                    <span><i class="fas fa-motorcycle me-1"></i>Veículo</span>
+                                    <div class="dropdown ms-2">
+                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                            <i class="fas fa-sort"></i>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li>
+                                                <a class="dropdown-item" href="?ordem=veiculo_asc{% include 'core/snippets/preserve_filters.html' with exclude_param='ordem' %}">
+                                                    <i class="fas fa-sort-alpha-down me-1"></i>A-Z
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="?ordem=veiculo_desc{% include 'core/snippets/preserve_filters.html' with exclude_param='ordem' %}">
+                                                    <i class="fas fa-sort-alpha-up me-1"></i>Z-A
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </th>
+                            <th>
+                                <div class="d-flex align-items-center">
+                                    <span><i class="fas fa-user me-1"></i>Proprietário</span>
+                                    <div class="dropdown ms-2">
+                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                            <i class="fas fa-sort"></i>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li>
+                                                <a class="dropdown-item" href="?ordem=proprietario_asc{% include 'core/snippets/preserve_filters.html' with exclude_param='ordem' %}">
+                                                    <i class="fas fa-sort-alpha-down me-1"></i>A-Z
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="?ordem=proprietario_desc{% include 'core/snippets/preserve_filters.html' with exclude_param='ordem' %}">
+                                                    <i class="fas fa-sort-alpha-up me-1"></i>Z-A
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </th>
+                            <th>
+                                <div class="d-flex align-items-center">
+                                    <span><i class="fas fa-dollar-sign me-1"></i>Valor</span>
+                                    <div class="dropdown ms-2">
+                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                            <i class="fas fa-sort"></i>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li>
+                                                <a class="dropdown-item" href="?ordem=valor_asc{% include 'core/snippets/preserve_filters.html' with exclude_param='ordem' %}">
+                                                    <i class="fas fa-sort-numeric-down me-1"></i>Menor Valor
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="?ordem=valor_desc{% include 'core/snippets/preserve_filters.html' with exclude_param='ordem' %}">
+                                                    <i class="fas fa-sort-numeric-up me-1"></i>Maior Valor
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </th>
+                            <th><i class="fas fa-calendar-alt me-1"></i>Prazo</th>
+                            <th><i class="fas fa-tag me-1"></i>Status</th>
+                            <th><i class="fas fa-cog me-1"></i>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for consignacao in consignacoes %}
+                            <tr>
+                                <td>{{ consignacao.data_entrada|date:"d/m/Y" }}</td>
+                                <td>{{ consignacao.marca }} {{ consignacao.modelo }} ({{ consignacao.ano }})</td>
+                                <td>{{ consignacao.nome_proprietario }}</td>
+                                <td>R$ {{ consignacao.valor_consignacao|floatformat:2 }}</td>
+                                <td>
+                                    {% if consignacao.status == 'DISPONÍVEL' %}
+                                        {% if consignacao.data_limite < hoje %}
+                                            <span class="badge bg-danger">Vencido</span>
+                                        {% else %}
+                                            <span>Até {{ consignacao.data_limite|date:"d/m/Y" }}</span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span>-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if consignacao.status == 'DISPONÍVEL' %}
+                                        <span class="badge bg-primary">{{ consignacao.status }}</span>
+                                    {% elif consignacao.status == 'VENDIDO' %}
+                                        <span class="badge bg-success">{{ consignacao.status }}</span>
+                                    {% elif consignacao.status == 'DEVOLVIDO' %}
+                                        <span class="badge bg-warning">{{ consignacao.status }}</span>
+                                    {% elif consignacao.status == 'CANCELADO' %}
+                                        <span class="badge bg-secondary">{{ consignacao.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="{% url 'consignacao-detail' consignacao.id %}" class="btn btn-sm btn-primary" title="Detalhes">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{% url 'consignacao-update' consignacao.id %}" class="btn btn-sm btn-info" title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        {% if is_gerente %}
+                                        <a href="{% url 'consignacao-delete' consignacao.id %}" class="btn btn-sm btn-danger" title="Excluir">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                        {% endif %}
+                                        
+                                        <div class="btn-group">
+                                            <button type="button" class="btn btn-sm btn-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="fas fa-cog"></i> Ações
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                {% if consignacao.status == 'DISPONÍVEL' %}
+                                                <li><a class="dropdown-item" href="{% url 'consignacao-vender' consignacao.id %}">
+                                                    <i class="fas fa-check-circle me-1"></i> Registrar Venda
+                                                </a></li>
+                                                {% endif %}
+                                                <li><a class="dropdown-item" href="{% url 'gerar-contrato-consignacao' consignacao.id %}">
+                                                    <i class="fas fa-file-contract me-1"></i> Contrato de Consignação
+                                                </a></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if is_paginated %}
+                <nav aria-label="Navegação de páginas" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1{% if status_atual %}&status={{ status_atual }}{% endif %}{% if vendedor_selecionado %}&vendedor={{ vendedor_selecionado }}{% endif %}">
+                                    <i class="fas fa-angle-double-left"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if status_atual %}&status={{ status_atual }}{% endif %}{% if vendedor_selecionado %}&vendedor={{ vendedor_selecionado }}{% endif %}">
+                                    <i class="fas fa-angle-left"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}{% if status_atual %}&status={{ status_atual }}{% endif %}{% if vendedor_selecionado %}&vendedor={{ vendedor_selecionado }}{% endif %}">{{ num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if status_atual %}&status={{ status_atual }}{% endif %}{% if vendedor_selecionado %}&vendedor={{ vendedor_selecionado }}{% endif %}">
+                                    <i class="fas fa-angle-right"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if status_atual %}&status={{ status_atual }}{% endif %}{% if vendedor_selecionado %}&vendedor={{ vendedor_selecionado }}{% endif %}">
+                                    <i class="fas fa-angle-double-right"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
+        {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>Nenhuma consignação encontrada.
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

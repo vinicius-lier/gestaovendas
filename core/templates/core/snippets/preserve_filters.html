@@ -1,0 +1,7 @@
+{% if request.GET %}
+    {% for key, value in request.GET.items %}
+        {% if key != exclude_param %}
+            &{{ key }}={{ value }}
+        {% endif %}
+    {% endfor %}
+{% endif %} 

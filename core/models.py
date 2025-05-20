@@ -52,3 +52,63 @@ class Venda(models.Model):
 
     def __str__(self):
         return f"{self.nome_cliente} - {self.modelo_interesse} ({self.data_atendimento})"
+
+class Consignacao(models.Model):
+    STATUS_CHOICES = [
+        ('DISPONÍVEL', 'DISPONÍVEL'),
+        ('VENDIDO', 'VENDIDO'),
+        ('DEVOLVIDO', 'DEVOLVIDO'),
+        ('CANCELADO', 'CANCELADO'),
+    ]
+    
+    # Dados do proprietário
+    nome_proprietario = models.CharField(max_length=100)
+    cpf_proprietario = models.CharField(max_length=14, blank=True, null=True)
+    rg_proprietario = models.CharField(max_length=20, blank=True, null=True)
+    endereco_proprietario = models.CharField(max_length=200, blank=True, null=True)
+    contato_proprietario = models.CharField(max_length=100)
+    
+    # Dados do veículo
+    marca = models.CharField(max_length=50)
+    modelo = models.CharField(max_length=100)
+    ano = models.CharField(max_length=4)
+    cor = models.CharField(max_length=50)
+    placa = models.CharField(max_length=8)
+    renavam = models.CharField(max_length=11, blank=True, null=True)
+    chassi = models.CharField(max_length=17, blank=True, null=True)
+    
+    # Dados da consignação
+    valor_consignacao = models.DecimalField(max_digits=10, decimal_places=2)
+    valor_minimo = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    comissao_percentual = models.DecimalField(max_digits=5, decimal_places=2, default=5.00)
+    data_entrada = models.DateField(default=timezone.now)
+    data_limite = models.DateField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='DISPONÍVEL')
+    observacoes = models.TextField(blank=True, null=True)
+    
+    # Relacionamentos
+    vendedor_responsavel = models.ForeignKey(User, on_delete=models.CASCADE)
+    
+    # Campos para quando for vendido
+    data_venda = models.DateField(blank=True, null=True)
+    valor_venda = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    nome_comprador = models.CharField(max_length=100, blank=True, null=True)
+    
+    class Meta:
+        verbose_name = 'Consignação'
+        verbose_name_plural = 'Consignações'
+    
+    def __str__(self):
+        return f"{self.modelo} - {self.placa} ({self.nome_proprietario})"
+        
+    @property
+    def valor_comissao(self):
+        if self.valor_venda:
+            return (self.valor_venda * self.comissao_percentual) / 100
+        return 0
+        
+    @property
+    def valor_proprietario(self):
+        if self.valor_venda:
+            return self.valor_venda - self.valor_comissao
+        return 0

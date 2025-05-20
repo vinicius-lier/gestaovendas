@@ -13,12 +13,46 @@
         </a>
     </div>
     <div class="card-body">
+        <!-- Filtros -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="btn-group" role="group">
+                    <a href="?ordem=data_desc{% if vendedor_selecionado %}&vendedor={{ vendedor_selecionado }}{% endif %}" 
+                       class="btn btn-outline-secondary {% if ordem_atual == 'data_desc' %}active{% endif %}">
+                        <i class="fas fa-sort-amount-down me-1"></i>Mais Recentes
+                    </a>
+                    <a href="?ordem=data_asc{% if vendedor_selecionado %}&vendedor={{ vendedor_selecionado }}{% endif %}" 
+                       class="btn btn-outline-secondary {% if ordem_atual == 'data_asc' %}active{% endif %}">
+                        <i class="fas fa-sort-amount-up me-1"></i>Mais Antigas
+                    </a>
+                </div>
+            </div>
+            {% if show_vendedor %}
+            <div class="col-md-6">
+                <form method="get" class="d-flex">
+                    <select name="vendedor" class="form-select me-2" onchange="this.form.submit()">
+                        <option value="">Todos os Vendedores</option>
+                        {% for vendedor in vendedores %}
+                            <option value="{{ vendedor.id }}" {% if vendedor_selecionado == vendedor.id|stringformat:"i" %}selected{% endif %}>
+                                {{ vendedor.get_full_name|default:vendedor.username }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    {% if ordem_atual %}
+                        <input type="hidden" name="ordem" value="{{ ordem_atual }}">
+                    {% endif %}
+                </form>
+            </div>
+            {% endif %}
+        </div>
+
         {% if vendedor_selecionado %}
             <div class="alert alert-info">
                 Exibindo atendimentos de: <strong>{{ vendedor_nome }}</strong>
-                <a href="{% url 'venda-list' %}" class="btn btn-sm btn-secondary ms-2">Limpar filtro</a>
+                <a href="{% url 'venda-list' %}{% if ordem_atual %}?ordem={{ ordem_atual }}{% endif %}" class="btn btn-sm btn-secondary ms-2">Limpar filtro</a>
             </div>
         {% endif %}
+
         {% if vendas %}
             <div class="table-responsive">
                 <table class="table table-hover">
@@ -28,27 +62,60 @@
                             {% if show_vendedor %}
                                 <th><i class="fas fa-user me-1"></i>Vendedor</th>
                             {% endif %}
-                            <th><i class="fas fa-handshake me-1"></i>Atendimentos</th>
-                            <th><i class="fas fa-comment me-1"></i>Observações</th>
+                            <th><i class="fas fa-user me-1"></i>Cliente</th>
+                            <th><i class="fas fa-car me-1"></i>Modelo</th>
+                            <th><i class="fas fa-tag me-1"></i>Status</th>
                             <th><i class="fas fa-cog me-1"></i>Ações</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for venda in vendas %}
                             <tr>
-                                <td>{{ venda.data|date:"d/m/Y" }}</td>
+                                <td>{{ venda.data_atendimento|date:"d/m/Y" }}</td>
                                 {% if show_vendedor %}
                                     <td>{{ venda.vendedor.get_full_name|default:venda.vendedor.username }}</td>
                                 {% endif %}
-                                <td>{{ venda.atendimentos|default:"-" }}</td>
-                                <td>{{ venda.observacoes|default:"-" }}</td>
+                                <td>{{ venda.nome_cliente|default:"-" }}</td>
+                                <td>{{ venda.modelo_interesse|default:"-" }}</td>
                                 <td>
-                                    <a href="{% url 'venda-update' venda.id %}" class="btn btn-sm btn-info">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <a href="{% url 'venda-delete' venda.id %}" class="btn btn-sm btn-danger">
-                                        <i class="fas fa-trash"></i>
-                                    </a>
+                                    {% if venda.status == 'VENDIDO' %}
+                                        <span class="badge bg-success">VENDIDO</span>
+                                    {% elif venda.status == 'EM NEGOCIAÇÃO' %}
+                                        <span class="badge bg-warning">EM NEGOCIAÇÃO</span>
+                                    {% elif venda.status == 'RECUSA DE CRÉDITO' %}
+                                        <span class="badge bg-danger">RECUSA DE CRÉDITO</span>
+                                    {% elif venda.status == 'NEGOCIAÇÃO ENCERRADA' %}
+                                        <span class="badge bg-secondary">NEGOCIAÇÃO ENCERRADA</span>
+                                    {% else %}
+                                        <span class="badge bg-info">{{ venda.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="{% url 'venda-update' venda.id %}" class="btn btn-sm btn-info">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{% url 'venda-delete' venda.id %}" class="btn btn-sm btn-danger">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                        
+                                        {% if venda.status == 'VENDIDO' %}
+                                        <div class="btn-group">
+                                            <button type="button" class="btn btn-sm btn-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="fas fa-file-contract"></i> Contratos
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li><a class="dropdown-item" href="{% url 'gerar-contrato' venda.id 'compra_venda' %}">Contrato de Venda</a></li>
+                                                <li><a class="dropdown-item" href="{% url 'gerar-contrato' venda.id 'veiculo_usado' %}">Contrato Veículo Usado</a></li>
+                                                <li><a class="dropdown-item" href="{% url 'gerar-contrato' venda.id 'sem_garantia' %}">Contrato Sem Garantia</a></li>
+                                                <li><a class="dropdown-item" href="{% url 'gerar-contrato' venda.id 'consignacao' %}">Contrato de Consignação</a></li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li><a class="dropdown-item" href="{% url 'gerar-contrato' venda.id 'sem_emplacamento' %}">Liberação Sem Emplacamento</a></li>
+                                                <li><a class="dropdown-item" href="{% url 'gerar-contrato' venda.id 'sem_intencao' %}">Liberação Sem Intenção</a></li>
+                                            </ul>
+                                        </div>
+                                        {% endif %}
+                                    </div>
                                 </td>
                             </tr>
                         {% endfor %}
@@ -61,12 +128,12 @@
                     <ul class="pagination justify-content-center">
                         {% if page_obj.has_previous %}
                             <li class="page-item">
-                                <a class="page-link" href="?page=1">
+                                <a class="page-link" href="?page=1{% if ordem_atual %}&ordem={{ ordem_atual }}{% endif %}{% if vendedor_selecionado %}&vendedor={{ vendedor_selecionado }}{% endif %}">
                                     <i class="fas fa-angle-double-left"></i>
                                 </a>
                             </li>
                             <li class="page-item">
-                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if ordem_atual %}&ordem={{ ordem_atual }}{% endif %}{% if vendedor_selecionado %}&vendedor={{ vendedor_selecionado }}{% endif %}">
                                     <i class="fas fa-angle-left"></i>
                                 </a>
                             </li>
@@ -79,19 +146,19 @@
                                 </li>
                             {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
                                 <li class="page-item">
-                                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                    <a class="page-link" href="?page={{ num }}{% if ordem_atual %}&ordem={{ ordem_atual }}{% endif %}{% if vendedor_selecionado %}&vendedor={{ vendedor_selecionado }}{% endif %}">{{ num }}</a>
                                 </li>
                             {% endif %}
                         {% endfor %}
 
                         {% if page_obj.has_next %}
                             <li class="page-item">
-                                <a class="page-link" href="?page={{ page_obj.next_page_number }}">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if ordem_atual %}&ordem={{ ordem_atual }}{% endif %}{% if vendedor_selecionado %}&vendedor={{ vendedor_selecionado }}{% endif %}">
                                     <i class="fas fa-angle-right"></i>
                                 </a>
                             </li>
                             <li class="page-item">
-                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if ordem_atual %}&ordem={{ ordem_atual }}{% endif %}{% if vendedor_selecionado %}&vendedor={{ vendedor_selecionado }}{% endif %}">
                                     <i class="fas fa-angle-double-right"></i>
                                 </a>
                             </li>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contrato de Intermediação para Venda de Veículo Automotor em Consignação</title>
+    <link rel="stylesheet" href="{% static 'core/contratos_html/css/style.css' %}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/signature_pad/1.5.3/signature_pad.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header-gradient"></div>
+        
+        <div class="logo-container">
+            <img src="{% static 'core/contratos_html/images/logo.png' %}" alt="Logo da Empresa" class="logo">
+        </div>
+        
+        <div class="titulo-principal">CONTRATO DE INTERMEDIAÇÃO</div>
+        <div class="subtitulo-principal">PARA VENDA DE VEÍCULO AUTOMOTOR EM CONSIGNAÇÃO</div>
+        
+        <div class="secao">
+            <p>Nos expressos termos deste documento e na melhor forma de direito as partes abaixo qualificadas têm entre si justo e ajustado este contrato de intermediação para a venda de veículo Automotor em consignação como se segue:</p>
+        </div>
+        
+        <div class="secao">
+            <div class="secao-titulo">I. PARTES</div>
+            <div class="parte">
+                <div class="parte-titulo">CONSIGNANTE:</div>
+                <p>Eduardo Dias Marlins – CPF: 410.463.251-15</p>
+                <p>Residente no endereço:</p>
+                <p>Telefone: (24) 98115-5843        E-mail:</p>
+            </div>
+            
+            <div class="parte">
+                <div class="parte-titulo">CONSIGNADA:</div>
+                <p>PARATY AUTO ZERO LTDA, com sede na rua Bruno Andréa, 24 – CEP: 23.906-410, PARQUE DAS PALMEIRAS, na cidade de ANGRA DOS REIS, inscrita no CNPJ sob nº 02.986.496/0001-17 e IE 75.412.76-</p>
+            </div>
+        </div>
+        
+        <div class="secao">
+            <div class="secao-titulo">II – OBJETO:</div>
+            <p>Através deste instrumento e nestas condições o CONSIGNANTE coloca à disposição da consignada um veículo automotor conforme especificações abaixo para que esta intermedeie a venda para terceiros.</p>
+            
+            <div class="veiculo">
+                <div class="veiculo-titulo">VEÍCULO:</div>
+                <p>Marca/Modelo: Triumph Tiger 900</p>
+                <p>Ano Fabricação/Modelo: 2024/2025</p>
+                <p>Cor: Cinza</p>
+                <p>Combustível: Gasolina</p>
+                <p>Placa: SGA5G22</p>
+                <p>Chassi: 97NC83DEXMCA4139</p>
+                <p>RENAVAM: 01410904480</p>
+                <p>Documento em nome de: Eduardo Dias Marlins</p>
+                <p>Estado: Consignado em perfeito estado.</p>
+            </div>
+        </div>
+        
+        <div class="secao">
+            <div class="secao-titulo">III – PREÇO:</div>
+            <p>O preço mínimo estabelecido para esta venda é, desde já, autorizado pelo Consignante em R$ 81.000,00 - Oitenta e hum mil reais (com acessórios).</p>
+        </div>
+        
+        <div class="secao">
+            <div class="secao-titulo">IV – PRAZO:</div>
+            <p>O prazo de vigência deste contrato, que poderá ser renovado através de acordo expresso entre as partes, é de 45 (quarenta e cinco) dias.</p>
+        </div>
+        
+        <div class="footer-gradient"></div>
+        
+        <div class="header-gradient"></div>
+        
+        <div class="logo-container">
+            <img src="{% static 'core/contratos_html/images/logo.png' %}" alt="Logo da Empresa" class="logo">
+        </div>
+        
+        <div class="titulo-principal">CONTRATO DE INTERMEDIAÇÃO</div>
+        <div class="subtitulo-principal">PARA VENDA DE VEÍCULO AUTOMOTOR EM CONSIGNAÇÃO</div>
+        
+        <div class="secao">
+            <div class="secao-titulo">V – RESPONSABILIDADES:</div>
+            <p>O CONSIGNANTE está ciente das qualidades e condições do veículo supra mencionado, sendo que qualquer problema que ocorrer após a negociação efetuada, será de responsabilidade do mesmo.</p>
+            <p>O CONSIGNANTE se responsabiliza perante a CONSIGNADA, assim como junto ao terceiro comprador, a fornecer toda e qualquer documentação solicitada relativa ao veículo, assumindo até a data de hoje total responsabilidade civil e criminal, multas, taxas, saldos de indenizações e/ou prejuízos que sofrer em razão dos efeitos da evicção incidente sobre o veículo.</p>
+            <p>O pagamento somente será feito para o consignante após 72 horas finalizado o recibo de compra e venda da motocicleta.</p>
+        </div>
+        
+        <div class="secao">
+            <div class="secao-titulo">VI – CONDIÇÕES EM CASO DE DESISTÊNCIA:</div>
+            <p>Em caso de desistência por parte do CONSIGNANTE:</p>
+            <p>Dentro do prazo de até 45 dias a contar da assinatura deste contrato, será devida à CONSIGNADA uma multa no valor de R$ 2.000,00 (dois mil reais), a título de ressarcimento por serviços de intermediação e exposição do veículo.</p>
+            <p>Após o prazo de 45 dias, será obrigatória a devolução ao CONSIGNADA do valor referente à lavagem do veículo no valor de R$ 150,00 (cento e cinquenta reais).</p>
+        </div>
+        
+        <div class="secao">
+            <p>E por estarem assim justos e acordados, assinam as partes a presente via em duas vias de igual teor.</p>
+            <p>Angra dos Reis – RJ, 17 de abril de 2025.</p>
+        </div>
+        
+        <div class="assinaturas">
+            <div class="assinatura">
+                CONSIGNANTE
+            </div>
+            
+            <div class="assinatura">
+                CONSIGNADA
+            </div>
+        </div>
+        
+        <div class="assinatura-digital">
+            <div>Assinatura Digital</div>
+            <canvas id="signature-pad" width="400" height="200"></canvas>
+            <div>
+                <button id="clear">Limpar</button>
+                <button id="save">Salvar Assinatura</button>
+            </div>
+        </div>
+        
+        <div class="footer-gradient"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var canvas = document.getElementById('signature-pad');
+            var signaturePad = new SignaturePad(canvas, {
+                backgroundColor: 'rgba(255, 255, 255, 0)',
+                penColor: 'rgb(0, 0, 0)'
+            });
+            
+            document.getElementById('clear').addEventListener('click', function() {
+                signaturePad.clear();
+            });
+            
+            document.getElementById('save').addEventListener('click', function() {
+                if (signaturePad.isEmpty()) {
+                    alert('Por favor, forneça uma assinatura primeiro.');
+                } else {
+                    var dataURL = signaturePad.toDataURL();
+                    console.log(dataURL);
+                    alert('Assinatura salva com sucesso!');
+                    // Aqui você pode implementar o código para salvar a assinatura
+                }
+            });
+            
+            // Ajustar o tamanho do canvas quando a janela for redimensionada
+            window.addEventListener('resize', resizeCanvas);
+            
+            function resizeCanvas() {
+                var ratio = Math.max(window.devicePixelRatio || 1, 1);
+                canvas.width = canvas.offsetWidth * ratio;
+                canvas.height = canvas.offsetHeight * ratio;
+                canvas.getContext("2d").scale(ratio, ratio);
+                signaturePad.clear(); // Limpa a assinatura
+            }
+            
+            resizeCanvas();
+        });
+    </script>
+</body>
+</html>

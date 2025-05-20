@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Termo de Responsabilidade Civil - Liberação de Moto sem Emplacamento</title>
+    <link rel="stylesheet" href="{% static 'core/contratos_html/css/style.css' %}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/signature_pad/1.5.3/signature_pad.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header-gradient"></div>
+        
+        <div class="logo-container">
+            <img src="{% static 'core/contratos_html/images/logo.png' %}" alt="Logo da Empresa" class="logo">
+        </div>
+        
+        <div class="titulo-principal">TERMO DE RESPONSABILIDADE CIVIL</div>
+        <div class="subtitulo-principal">LIBERAÇÃO DE MOTO SEM EMPLACAMENTO</div>
+        
+        <div class="secao">
+            <p>CNPJ 02.968.496/0001-17 INSC. EST. 75.412.762</p>
+            <p>RUA BRUNO ANDREA 24 – PQ DAS PALMEIRAS – ANGRA DOS REIS – RJ.</p>
+            <p>FONE/FAX (24) 3365-3303</p>
+            <p>E-mail: motorsprado@gmail.com</p>
+        </div>
+        
+        <div class="secao">
+            <p>Eu, MARY DE FARIS, CPF: 057.186.267-58</p>
+            
+            <p>TENHO TOTAL CIÊNCIA QUE RETIRO A MOTOCICLETA YAMAHA/NMAX 160, ANO/MOD: 2025/2025 CHASSI: 9C6SG9110S0006646 DA LOJA PARATY AUTO ZERO LTDA, NÃO ESTANDO DEVIDAMENTE EMPLACADA E ESTOU CIENTE DE QUE A MOTOCICLETA SÓ PODE RODAR 15 DIAS SEM EMPLACAR APÓS A EMISSÃO DA NOTA. SENDO ASSIM TODA E QUALQUER RESPONSABILIDADE CIVIL E CRIMINAL APARTI DE AGORA É MINHA RESPONSABILIDADE.</p>
+            
+            <p>ANGRA DOS REIS, 28 DE MARÇO DE 2025.</p>
+        </div>
+        
+        <div class="assinaturas">
+            <div class="assinatura">
+                MARY DE FARIS
+            </div>
+            
+            <div class="assinatura">
+                CPF: 057.186.267-58
+            </div>
+        </div>
+        
+        <div class="assinatura-digital">
+            <div>Assinatura Digital</div>
+            <canvas id="signature-pad" width="400" height="200"></canvas>
+            <div>
+                <button id="clear">Limpar</button>
+                <button id="save">Salvar Assinatura</button>
+            </div>
+        </div>
+        
+        <div class="footer-gradient"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var canvas = document.getElementById('signature-pad');
+            var signaturePad = new SignaturePad(canvas, {
+                backgroundColor: 'rgba(255, 255, 255, 0)',
+                penColor: 'rgb(0, 0, 0)'
+            });
+            
+            document.getElementById('clear').addEventListener('click', function() {
+                signaturePad.clear();
+            });
+            
+            document.getElementById('save').addEventListener('click', function() {
+                if (signaturePad.isEmpty()) {
+                    alert('Por favor, forneça uma assinatura primeiro.');
+                } else {
+                    var dataURL = signaturePad.toDataURL();
+                    console.log(dataURL);
+                    alert('Assinatura salva com sucesso!');
+                    // Aqui você pode implementar o código para salvar a assinatura
+                }
+            });
+            
+            // Ajustar o tamanho do canvas quando a janela for redimensionada
+            window.addEventListener('resize', resizeCanvas);
+            
+            function resizeCanvas() {
+                var ratio = Math.max(window.devicePixelRatio || 1, 1);
+                canvas.width = canvas.offsetWidth * ratio;
+                canvas.height = canvas.offsetHeight * ratio;
+                canvas.getContext("2d").scale(ratio, ratio);
+                signaturePad.clear(); // Limpa a assinatura
+            }
+            
+            resizeCanvas();
+        });
+    </script>
+</body>
+</html>

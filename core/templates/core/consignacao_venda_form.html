@@ -1,0 +1,93 @@
+{% extends 'core/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Registrar Venda de Consignação{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-check-circle me-2"></i>Registrar Venda - Consignação
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="alert alert-info">
+                    <strong>Veículo:</strong> {{ consignacao.marca }} {{ consignacao.modelo }} ({{ consignacao.ano }}) - {{ consignacao.cor }}<br>
+                    <strong>Placa:</strong> {{ consignacao.placa }}<br>
+                    <strong>Proprietário:</strong> {{ consignacao.nome_proprietario }}<br>
+                    <strong>Valor de Consignação:</strong> R$ {{ consignacao.valor_consignacao|floatformat:2 }}
+                </div>
+            </div>
+        </div>
+        
+        <form method="post" class="needs-validation" novalidate>
+            {% csrf_token %}
+            
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <h4 class="border-bottom pb-2 mb-3">Dados da Venda</h4>
+                </div>
+                <div class="col-md-4">
+                    {{ form.data_venda|as_crispy_field }}
+                </div>
+                <div class="col-md-4">
+                    {{ form.valor_venda|as_crispy_field }}
+                </div>
+                <div class="col-md-4">
+                    {{ form.nome_comprador|as_crispy_field }}
+                </div>
+                <div class="col-md-4">
+                    {{ form.status|as_crispy_field }}
+                </div>
+                
+                <div class="col-md-12 mt-3">
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">Resumo Financeiro</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <p class="mb-1">Valor da Venda:</p>
+                                    <h4>R$ {{ valor_venda|default:"0,00" }}</h4>
+                                </div>
+                                <div class="col-md-4">
+                                    <p class="mb-1">Comissão ({{ consignacao.comissao_percentual }}%):</p>
+                                    <h4>R$ {{ valor_comissao|default:"0,00" }}</h4>
+                                </div>
+                                <div class="col-md-4">
+                                    <p class="mb-1">Valor para o Proprietário:</p>
+                                    <h4>R$ {{ valor_proprietario|default:"0,00" }}</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-12 mt-3">
+                    <div class="alert alert-info">
+                        Após preencher o valor da venda, clique em <strong>Calcular</strong> para ver o resumo financeiro.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <a href="{% url 'consignacao-detail' consignacao.id %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Voltar
+                        </a>
+                        <button type="submit" name="calcular" class="btn btn-primary">
+                            <i class="fas fa-calculator me-1"></i>Calcular
+                        </button>
+                        <button type="submit" name="confirmar" class="btn btn-success">
+                            <i class="fas fa-check-circle me-1"></i>Confirmar Venda
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %} 
