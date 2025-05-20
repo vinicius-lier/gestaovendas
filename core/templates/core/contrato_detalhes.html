@@ -1,0 +1,62 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Detalhes do Contrato{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h4>Detalhes do Contrato</h4>
+        </div>
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <h5>Informações do Contrato</h5>
+                    <p><strong>ID:</strong> {{ contrato.id }}</p>
+                    <p><strong>Tipo:</strong> {{ contrato.tipo_contrato|default:"Padrão" }}</p>
+                    <p><strong>Data:</strong> {{ contrato.data_criacao|date:"d/m/Y H:i" }}</p>
+                </div>
+                <div class="col-md-6">
+                    <h5>Cliente</h5>
+                    <p><strong>Nome:</strong> {{ contrato.cliente.nome|default:"Não informado" }}</p>
+                    <p><strong>CPF:</strong> {{ contrato.cliente.cpf|default:"Não informado" }}</p>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-12">
+                    <h5>Assinaturas</h5>
+                    {% if assinaturas %}
+                        <div class="row">
+                            {% for assinatura in assinaturas %}
+                                <div class="col-md-6 mb-3">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            {{ assinatura.get_tipo_display }} - {{ assinatura.data_criacao|date:"d/m/Y H:i" }}
+                                        </div>
+                                        <div class="card-body">
+                                            <img src="{{ assinatura.imagem_assinatura }}" class="img-fluid" alt="Assinatura">
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning">
+                            Nenhuma assinatura registrada para este contrato.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="mt-4">
+                <a href="{% url 'venda_detalhes' contrato.venda.id %}" class="btn btn-secondary">Voltar para Detalhes da Venda</a>
+                {% if contrato.venda.tipo_venda == 'consignacao' %}
+                    <a href="{% url 'consignacao_detalhes' contrato.venda.consignacao.id %}" class="btn btn-secondary">Voltar para Detalhes da Consignação</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

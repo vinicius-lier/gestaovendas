@@ -27,7 +27,7 @@
             
             <div class="parte">
                 <div class="parte-titulo">COMPRADOR:</div>
-                <p>{{ cliente.nome }}, portador do CPF de nº {{ cliente.cpf }}, RG: {{ cliente.rg }}, residente no endereço {{ cliente.endereco }}, tenho ciência que fiz a aquisição do seguinte veículo {{ veiculo.marca }} {{ veiculo.modelo }}, de placa {{ veiculo.placa }}, Chassi Nº {{ veiculo.chassi }}, Renavam Nº {{ veiculo.renavam }} KM {{ veiculo.km|default:"0" }} no valor de R$ {{ venda.valor_total|floatformat:2 }} ({{ venda.valor_total_extenso }}), pela seguinte forma de pagamento: {{ venda.forma_pagamento_detalhada }}</p>
+                <p>{{ cliente.nome }}, portador do CPF de nº {{ cliente.cpf }}, RG: {{ cliente.rg }}, residente no endereço {{ cliente.endereco }}, tenho ciência que fiz a aquisição do seguinte veículo {{ veiculo.marca }} {{ veiculo.modelo }}, de placa {{ veiculo.placa }}, Chassi Nº {{ veiculo.chassi }}, Renavam Nº {{ veiculo.renavam }}, Número do Motor: {{ veiculo.motor|default:"" }}, KM {{ veiculo.km|default:"0" }} no valor de R$ {{ venda.valor_total|floatformat:2 }} ({{ venda.valor_total_extenso }}), pela seguinte forma de pagamento: {{ venda.forma_pagamento_detalhada }}</p>
             </div>
         </div>
         

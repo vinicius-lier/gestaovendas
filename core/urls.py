@@ -1,5 +1,9 @@
 from django.urls import path
 from . import views
+from .views import (
+    UsuarioCreateView, UsuarioUpdateView, AlterarSenhaView,
+    salvar_assinatura, ContratoDetailView,
+)
 
 urlpatterns = [
     path('', views.dashboard, name='dashboard'),
@@ -22,12 +26,14 @@ urlpatterns = [
     
     # Gerenciamento de Usuários
     path('usuarios/', views.UsuarioListView.as_view(), name='usuario-list'),
-    path('usuarios/novo/', views.UsuarioCreateView.as_view(), name='usuario-create'),
-    path('usuarios/<int:pk>/editar/', views.UsuarioUpdateView.as_view(), name='usuario-update'),
-    path('usuarios/<int:pk>/alterar-senha/', views.AlterarSenhaView.as_view(), name='alterar-senha'),
+    path('usuarios/novo/', UsuarioCreateView.as_view(), name='usuario-create'),
+    path('usuarios/<int:pk>/editar/', UsuarioUpdateView.as_view(), name='usuario-update'),
+    path('usuarios/<int:pk>/alterar-senha/', AlterarSenhaView.as_view(), name='alterar-senha'),
     
     # Outros URLs
     path('resumo-gerencial/', views.resumo_gerencial, name='resumo-gerencial'),
     path('importar-vendas/', views.importar_vendas, name='importar-vendas'),
     path('modelo-importacao/', views.download_modelo_importacao, name='modelo-importacao'),
+    path('api/salvar-assinatura/', salvar_assinatura, name='salvar_assinatura'),
+    path('contrato/<int:pk>/', ContratoDetailView.as_view(), name='contrato_detalhes'),
 ] 

@@ -73,4 +73,13 @@
         {% endif %}
     </div>
 </div>
+
+<div class="mt-3">
+    <a href="{% url 'vendas_list' %}" class="btn btn-secondary">Voltar para Lista</a>
+    <a href="{% url 'venda_edit' venda.id %}" class="btn btn-primary">Editar</a>
+    <a href="{% url 'contrato_detalhes' venda.id %}" class="btn btn-info">Ver Contrato e Assinaturas</a>
+    {% if perms.core.delete_venda %}
+        <a href="{% url 'venda_delete' venda.id %}" class="btn btn-danger" onclick="return confirm('Tem certeza que deseja excluir esta venda?')">Excluir</a>
+    {% endif %}
+</div>
 {% endblock %} 

@@ -47,6 +47,7 @@
                 <p>MARCA/MODELO: {{ veiculo.marca }} {{ veiculo.modelo }} ANO FABRICAÇÃO/MODELO: {{ veiculo.ano }}</p>
                 <p>COR: {{ veiculo.cor }} PLACA: {{ veiculo.placa }}</p>
                 <p>CHASSI: {{ veiculo.chassi }} RENAVAM Nº {{ veiculo.renavam }}</p>
+                <p>NÚMERO DE MOTOR: {{ veiculo.motor|default:"" }}</p>
                 <p>DOCUMENTO EM NOME DE: {{ proprietario.nome }}</p>
                 <p>CONSIGNADO em perfeito estado.</p>
             </div>
@@ -54,8 +55,8 @@
         
         <div class="secao">
             <div class="secao-titulo">III – PREÇO:</div>
-            <p>O preço acordado para o consignante é de R$ {{ contrato.valor_consignacao|floatformat:2 }}.</p>
-            <p>O valor mínimo para a venda é de R$ {{ contrato.valor_minimo|floatformat:2 }}.</p>
+            <p>O preço acordado para o consignante é de R$ {{ contrato.valor_consignacao|floatformat:2 }} ({{ contrato.valor_consignacao_extenso }}).</p>
+            <p>O valor mínimo para a venda é de R$ {{ contrato.valor_minimo|floatformat:2 }} ({{ contrato.valor_minimo_extenso }}).</p>
             <p>A comissão acordada é de {{ contrato.comissao_percentual }}% sobre o valor da venda.</p>
         </div>
         

@@ -27,7 +27,7 @@
             
             <div class="parte">
                 <div class="parte-titulo">COMPRADOR:</div>
-                <p>EDILENE PEREIRA Telefone (24)999051594, portador da carteira de identidade, CPF:101.123.187-54, RG: 20.169.276-1 residente no endereço: BECO SÃO LUCAS Nº 0, Bairro: BRACUI, cidade: ANGRA DOS REIS, UF: RJ, CEP: 23.943-135.</p>
+                <p>{{ cliente.nome }} Telefone {{ cliente.contato }}, portador da carteira de identidade, CPF:{{ cliente.cpf }}, RG: {{ cliente.rg }} residente no endereço: {{ cliente.endereco }}.</p>
             </div>
         </div>
         
@@ -37,12 +37,12 @@
         
         <div class="secao">
             <div class="secao-titulo">1 – DO OBJETO DO CONTRATO</div>
-            <p>Cláusula 1ª: Este contrato tem como objeto o veículo MARCA:YAMAHA, MODELO: NEO 125, CHASSI: 9C6SEB520R0069469, COR: PRETA PLACA: SRQ-2B02, KM: 2.897 NÚMERO DE MOTOR: E3V2E-094252 de Responsabilidade do VENDEDOR, livre de qualquer ônus e encargo.</p>
+            <p>Cláusula 1ª: Este contrato tem como objeto o veículo MARCA:{{ veiculo.marca }}, MODELO: {{ veiculo.modelo }}, CHASSI: {{ veiculo.chassi }}, COR: {{ veiculo.cor }} PLACA: {{ veiculo.placa }}, KM: {{ veiculo.km|default:"0" }} NÚMERO DE MOTOR: {{ veiculo.motor|default:"" }} de Responsabilidade do VENDEDOR, livre de qualquer ônus e encargo.</p>
         </div>
         
         <div class="secao">
             <div class="secao-titulo">2 – DO PREÇO</div>
-            <p>Cláusula 1ª – Fica acordado o valor de R$14.500,00 (Quatorze mil e quinhentos reais) como valor do bem.</p>
+            <p>Cláusula 1ª – Fica acordado o valor de R${{ venda.valor_total|floatformat:2 }} ({{ venda.valor_total_extenso }}) como valor do bem.</p>
             <p>Cláusula 2ª: Fica o COMPRADOR obrigado a efetuar o pagamento da quantia de 10% DO VALOR DA VENDA DA MOTOCICLETA ao VENDEDOR, sob pena de desistência de negócio.</p>
         </div>
         
@@ -103,7 +103,7 @@
         
         <div class="secao">
             <p>Por estarem assim justos e contratados, firmam o presente instrumento em 02 (duas) vias de igual teor e forma.</p>
-            <p>Angra dos reis, 07 DE MAIO DE 2025.</p>
+            <p>Angra dos reis, {{ data_atual }}.</p>
         </div>
         
         <div class="secao">
@@ -116,8 +116,8 @@
         
         <div class="assinaturas">
             <div class="assinatura">
-                EDILENE PEREIRA<br>
-                CPF: 101.123.187-54
+                {{ cliente.nome }}<br>
+                CPF: {{ cliente.cpf }}
             </div>
             
             <div class="assinatura">
@@ -131,7 +131,8 @@
             <canvas id="signature-pad" width="400" height="200"></canvas>
             <div>
                 <button id="clear">Limpar</button>
-                <button id="save">Salvar Assinatura</button>
+                <button id="save" data-tipo="cliente">Salvar Assinatura do Cliente</button>
+                <button id="save-vendedor" data-tipo="vendedor">Salvar Assinatura do Vendedor</button>
             </div>
         </div>
         
@@ -150,15 +151,47 @@
                 signaturePad.clear();
             });
             
-            document.getElementById('save').addEventListener('click', function() {
+            function salvarAssinatura(tipo) {
                 if (signaturePad.isEmpty()) {
                     alert('Por favor, forneça uma assinatura primeiro.');
-                } else {
-                    var dataURL = signaturePad.toDataURL();
-                    console.log(dataURL);
-                    alert('Assinatura salva com sucesso!');
-                    // Aqui você pode implementar o código para salvar a assinatura
+                    return;
                 }
+                
+                    var dataURL = signaturePad.toDataURL();
+                
+                // Enviar assinatura para o backend
+                fetch('{% url "salvar_assinatura" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        assinatura: dataURL,
+                        tipo: tipo,
+                        id_venda: '{{ venda.id }}',
+                        id_consignacao: '{{ consignacao.id|default:"" }}'
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'sucesso') {
+                    alert('Assinatura salva com sucesso!');
+                    } else {
+                        alert('Erro ao salvar assinatura: ' + data.mensagem);
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    alert('Erro ao salvar assinatura. Verifique o console para mais detalhes.');
+                });
+            }
+            
+            document.getElementById('save').addEventListener('click', function() {
+                salvarAssinatura('cliente');
+            });
+            
+            document.getElementById('save-vendedor').addEventListener('click', function() {
+                salvarAssinatura('vendedor');
             });
             
             // Ajustar o tamanho do canvas quando a janela for redimensionada

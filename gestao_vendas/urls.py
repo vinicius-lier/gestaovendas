@@ -21,14 +21,7 @@ from core import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.dashboard, name='dashboard'),
     path('login/', auth_views.LoginView.as_view(template_name='core/login.html'), name='login'),
     path('logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
-    path('vendas/', views.VendaListView.as_view(), name='venda-list'),
-    path('vendas/nova/', views.VendaCreateView.as_view(), name='venda-create'),
-    path('vendas/<int:pk>/editar/', views.VendaUpdateView.as_view(), name='venda-update'),
-    path('vendas/<int:pk>/excluir/', views.VendaDeleteView.as_view(), name='venda-delete'),
-    path('resumo-gerencial/', views.resumo_gerencial, name='resumo-gerencial'),
-    path('importar-vendas/', views.importar_vendas, name='importar-vendas'),
-    path('modelo-importacao/', views.download_modelo_importacao, name='modelo-importacao'),
+    path('', include('core.urls')),
 ]

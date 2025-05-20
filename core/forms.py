@@ -22,7 +22,7 @@ class VendaForm(forms.ModelForm):
         ]
         widgets = {
             'data_atendimento': forms.DateInput(attrs={'type': 'date'}),
-        }
+        } 
 
 class ConsignacaoForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
